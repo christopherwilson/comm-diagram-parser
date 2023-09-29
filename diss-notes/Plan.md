@@ -1,0 +1,13 @@
+- [ ] Background Chapter (20/10/2023 Week 5 Sem 1 (hard))
+	- [ ] What is a Commutative Diagram?
+	- [ ] Other Commutative Diagram parsers/representations
+	- [ ] 
+- [ ] Research & Design (Week 7 Sem 1)
+	- [ ] Choose/Design Representations
+		- [ ] Design language for set of equations
+		- [ ] Intermediate Representations?
+		- [ ] Commutative Diagram
+- [ ] Basic Implementation (Week 11 Sem 1 (soft))
+- [ ] Implementation (Week 2/3 Sem 2)
+- [ ] Experimentation and Evaluation (Week 6 Sem 2)
+- [ ] First Draft (Week 9 Sem 2)
