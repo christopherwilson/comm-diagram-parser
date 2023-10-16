@@ -229,7 +229,11 @@ There are many existing methods of drawing commutative diagrams, from hand-drawn
 Drawing commutative diagrams by hand is fairly easy and quick, but drawing a good looking diagram can be much harder and time-intensive. Arrows, for instance, take effort to draw uniformly, and curved arrows can be hard to draw regularly. It can also be hard to know where to initially position the objects to avoid creating a tangled web of intersecting arrows, especially in large and interconnected categories. 
 
 \subsection{\LaTeX\ packages}
-\LaTeX{} is a typesetting system frequently used by mathematicians to typeset mathematical documents. \LaTeX{} is recommended by the American Mathematical Society for authors who want to publish with them \cite{AMSlatexrec}, and a study in 2009 found that 96.9\% of submissions to 4 randomly selected mathematical journals were typeset in \LaTeX{} \cite{brischoux2009don}. 
+\LaTeX{} is a typesetting system frequently used by mathematicians to typeset mathematical documents. \LaTeX{} is recommended by the American Mathematical Society for authors who want to publish with them \cite{AMSlatexrec}, and a study in 2009 found that 96.9\% of submissions to 4 randomly selected mathematical journals were typeset in \LaTeX{} \cite{brischoux2009don}. Therefore, to look at how to create professional looking commutative diagrams, we should look at what \LaTeX{} has to offer.
+
+The Comprehensive \TeX{} Archive, or CTAN, is the main repository of \LaTeX{} packages. Browsing the ``Commutative Diagrams'' topic \cite{ctancommdiag} gives us 16 packets, some of which build on other packets. Generally these packets follow the same process as hand-drawing a diagram: we define and choose the position of the objects, then define the maps between the objects.
+
+The benefits and drawbacks of using these packages for commutative diagram drawing is almost inverse of hand-drawing, they produce professional looking diagrams, but the process of typing out the diagrams is much slower and more un-intuitive compared to the speed and simplicity of hand-drawing. The problem of initial object placement exists just as much with this method.
 
 \section{Graph Drawing Algorithms}\label{bkg:graph-draw}
 
