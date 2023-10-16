@@ -10,7 +10,27 @@
 % you should catch most accidental changes of page layout though.
 
 \usepackage{microtype} % recommended, but you can remove if it causes problems
-\usepackage{natbib} % recommended for citations
+\usepackage{biblatex} 
+\usepackage{url}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{tikz-cd}
+\usepackage{hyperref}
+% TODO: better colours
+\usepackage[nameinlink]{cleveref}
+\usepackage{enumitem}
+\setlist{nosep}
+
+\addbibresource{mybibfile.bib}
+
+\theoremstyle{definition}
+\newtheorem{prop}{Proposition}
+\newtheorem{defn}[prop]{Definition}
+
+
+\newcommand{\cat}[1]{\mathscr{#1}}
+\newcommand{\ob}[1]{\obj(\mathscr{#1})}
+\DeclareMathOperator{\obj}{ob}
 
 \begin{document}
 \begin{preliminary}
@@ -140,15 +160,80 @@ Divide your chapters into sub-parts as appropriate.
 
 \section{Citations}
 
-Citations, such as \citet{P1} or \citep{P2}, can be generated using
+Citations, such as \autocite{P1} or \autocite{P2}, can be generated using
 \texttt{BibTeX}. We recommend using the \texttt{natbib} package (default) or the newer \texttt{biblatex} system. 
 
 You may use any consistent reference style that you prefer, including ``(Author, Year)'' citations. 
 
 \chapter{Background}
+In this chapter, we give a brief introduction to the mathematical field of Category Theory (Section \ref{bkg:cat}) and define a commutative diagram (Section \ref{bkg:diag}). We then discuss exisitng methods of drawing commutative diagrams  relevant graph drawing algorithms that can be used to draw commutative diagrams (Section \ref{bkg:graph-draw}).
 
-\section{Category Theory and Commutative Diagrams}
+\section{Category Theory}\label{bkg:cat}
+Commutative diagrams are primarily used by mathematicians studying category theory, so to understand commutative diagrams and their uses it is helpful to know a bit about category theory.
 
+When studying mathematics we encounter many different mathematical objects, such as groups, graphs, vector spaces, sets, natural numbers, and rings, all with their own rules and structure. There are quite often similarities and relationships between these objects, however, when working directly with these objects these similarities and relationships can sometimes be hard to see through the different notation's and ways of describing them, especially if the objects come from different areas of mathematics. Category theory aims to provide a framework for expressing every mathematical object and its structure, abstracting away the details so the similarities and relationships become more clear. This is done by defining a new mathematical object: the category.
+
+\begin{defn}[{\autocite[Def 1.1.1]{leinster2016basic}}]\label{def:cat}
+    A category $\cat{A}$ consists of:
+    \begin{itemize}
+        \item a collection $\ob{A}$ of objects;
+        \item for each $A, B \in \ob{A}$, a collection $\cat A(A,B)$ of maps or arrows or morphisms from $A$ to $B$;
+        \item for each $A, B, C \in \ob{A}$, a function 
+        \begin{align*}
+            \cat{A}(B,C) \times \cat{A}(A,B) &\to \cat{A}(A,C) \\
+            (g,f) &\mapsto g \circ f,
+        \end{align*}
+        called composition;
+        \item for each $A \in \ob{A}$, an element $1_A$ of $\cat{A}(A,A)$, called the identity on $A$.
+    \end{itemize}
+    satisfying the following axioms:
+    \begin{itemize}
+        \item associativity: for each $f \in \cat{A}(A,B)$, $g \in \cat{A}(B,C)$, and $h \in \cat{A}(C,D)$, we have $(h \circ g) \circ f = h \circ (g \circ f)$;
+        \item identity laws: for each $f \in \cat{A}(A,B)$, we have $f \circ 1_A = f = 1_B \circ f$.
+    \end{itemize}
+\end{defn}
+
+An example of a category is $\mathbf{Set}$, where the objects are sets, and the maps are set functions between the sets. For another example, we could pick a set $A$ and represent it with a category $\cat{A}$ by simply letting $\ob{A} = A$. Since objects in a generic set have no intrinsic relationship with each other the maps in $\cat{A}$ will just be the required identity maps. We can apply a preordering to a set $A$, by for each pair of elements $a,b \in A$ deciding if $a \ge b$\footnote{The difference between a preorder and an order is that in an order if $a \ge b$ and $b \ge a$ then $a = b$. This is not the case in a preorder.}. Let $\mathbf{a}, \mathbf{b} \in \ob{A}$ represent $a,b \in A$ respectively, we can represent this preorder in $\cat A$ by adding a map from $\mathbf{a}$ to $\mathbf{b}$ if $a \ge b$. The identity maps give us that $a \ge a$, and composition gives us the property that if $a \ge b$ and $b \ge c$, then $a \ge c$, as we can compose the map from $\mathbf{a}$ to $\mathbf{b}$ and the map from $\mathbf{b}$ to $\mathbf{c}$ to get a map from $\mathbf{a}$ to $\mathbf{c}$. 
+
+Categories don't have to represent pure mathematical objects such as sets or numbers, for example, the category $\mathbf{Hask}$ \cite{wiki:hask} represents programs written in the language Haskell, with the objects being types and the maps being functions between those types. 
+
+\section{Commutative Diagrams}\label{bkg:diag}
+Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the maps like this does convey all the information we need, but in a way that's un-intuitive and hard to parse for a human reader, so let us find another way. Recall from the definition of a category (Definition \ref{def:cat}) that an alternative name for ``maps" are arrows. With this in mind, we draw each object spaced out on a blank page, and then for each pair of objects $(A', B')$ draw an arrow from $A'$ to $B'$ for each map from $A'$ to $B'$. Doing this to $\cat B$ gives us the diagram in Figure \ref{fig:comm-diag-ex1}.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzcd}[cramped]
+	A & B & D \\
+	& C
+	\arrow["f", from=1-1, to=1-2]
+	\arrow["g"', from=1-1, to=2-2]
+	\arrow["h", from=1-2, to=2-2]
+	\arrow["i"', from=1-3, to=1-2]
+	\arrow["j", from=1-3, to=2-2]
+    \end{tikzcd}
+    \caption{A commutative diagram representing category $\cat B$.}
+    \label{fig:comm-diag-ex1}
+\end{figure}
+
+Define a path from an object $A'$ to an object $B'$ to be a chain of arrows from $A'$ to $B'$. We say a diagram commutes, or is a \emph{commutative diagram} if and only if for every pair of objects every path between those two objects is equivalent to every other path. For example, the diagram in Figure \ref{fig:comm-diag-ex1} is commutative if $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was commutative, then we would know that $h \circ f = g$ and $h \circ i = j$.
+
+%Add stuff about representing theorems (e.g. correspondence theorem) with comm diags?
+
+%This paragraph could be moved to "Existing Commutative Diagmrams..." to point out how none of the exsiting methods solve this problem.
+When drawing a commutative diagram it can be hard to know where to initially position the objects, and a bad positioning can cause the diagram to be hard to read - defeating its purpose. This project aims to automate the creation of commutative diagrams from a list of maps, alleviating this problem.
+
+\section{Existing Commutative Diagram Drawing Methods}\label{bkg:other}
+There are many existing methods of drawing commutative diagrams, from hand-drawn to dedicated software. This section discusses some of these methods and the benefits and drawbacks of each.
+
+\subsection{Hand-drawn}
+Drawing commutative diagrams by hand is fairly easy and quick, but drawing a good looking diagram can be much harder and time-intensive. Arrows, for instance, take effort to draw uniformly, and curved arrows can be hard to draw regularly. It can also be hard to know where to initially position the objects to avoid creating a tangled web of intersecting arrows, especially in large and interconnected categories. 
+
+\subsection{\LaTeX\ packages}
+\LaTeX{} is a typesetting system frequently used by mathematicians to typeset mathematical documents. \LaTeX{} is recommended by the American Mathematical Society for authors who want to publish with them \cite{AMSlatexrec}, and a study in 2009 found that 96.9\% of submissions to 4 randomly selected mathematical journals were typeset in \LaTeX{} \cite{brischoux2009don}. 
+
+\section{Graph Drawing Algorithms}\label{bkg:graph-draw}
+
+\section{Text Parsing}\label{bkg:text-parse}
 
 
 \chapter{Conclusions}
@@ -172,8 +257,9 @@ after the deadline to conform to the page and style requirements you will be
 subject to the usual late penalties based on your final submission time.
 
 % \bibliographystyle{plain}
-\bibliographystyle{plainnat}
-\bibliography{mybibfile}
+%\bibliographystyle{plainnat}
+%\bibliography{mybibfile}
+\printbibliography
 
 
 % You may delete everything from \appendix up to \end{document} if you don't need it.
