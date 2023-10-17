@@ -231,11 +231,20 @@ Drawing commutative diagrams by hand is fairly easy and quick, but drawing a goo
 \subsection{\LaTeX\ packages}
 \LaTeX{} is a typesetting system frequently used by mathematicians to typeset mathematical documents. \LaTeX{} is recommended by the American Mathematical Society for authors who want to publish with them \cite{AMSlatexrec}, and a study in 2009 found that 96.9\% of submissions to 4 randomly selected mathematical journals were typeset in \LaTeX{} \cite{brischoux2009don}. Therefore, to look at how to create professional looking commutative diagrams, we should look at what \LaTeX{} has to offer.
 
-The Comprehensive \TeX{} Archive, or CTAN, is the main repository of \LaTeX{} packages. Browsing the ``Commutative Diagrams'' topic \cite{ctancommdiag} gives us 16 packets, some of which build on other packets. Generally these packets follow the same process as hand-drawing a diagram: we define and choose the position of the objects, then define the maps between the objects.
+The Comprehensive \TeX{} Archive, or CTAN, is the main repository of \LaTeX{} packages. Browsing the ``Commutative Diagrams'' topic \cite{ctancommdiag} gives us 16 packets, some of which build on other packets. All the packets ask us to position the objects ourselves, either using cartesian coordinates or by using a grid-structure. %include example of this?
+In general, we have to define the starting position and direction of the arrows ourselves, but some packages such as CoDi %cite
+and DCpic %cite
+just ask us to define which objects the arrows go between.
 
-The benefits and drawbacks of using these packages for commutative diagram drawing is almost inverse of hand-drawing, they produce professional looking diagrams, but the process of typing out the diagrams is much slower and more un-intuitive compared to the speed and simplicity of hand-drawing. The problem of initial object placement exists just as much with this method.
+The benefits and drawbacks of drawing commutative diagrams using these packages is almost inverse of hand-drawing, they produce professional looking diagrams, but the process of typing out the diagrams is much slower and more un-intuitive compared to the speed and simplicity of hand-drawing. This method also has the problem of a bad initial placement of objects leading to a messy diagram. The ease of fixing a bad placement relative to hand-drawing depends on the packet being used, ones that require us to define the position and direction of arrows will need large complicated re-writes, potentially from scratch, whereas packages that just require object positions will be fairly easy to re-organise. In conclusion, \LaTeX{} packages are good at producing professional looking commutative diagrams, but take much more effort to produce than hand-drawing.
+
+\subsection{Graphical Editors}
+Dedicated graphical editors for creating commutative diagrams with the tikzcd package, such as quiver %cite
+and tikzcd-editor, %cite
+mitigate the drawbacks of the \LaTeX{} packages by making the creation of the diagrams much easier. The graphical interface is much more intuitive to use than typing out the diagram manually, and the ability to drag objects helps mitigate the initial object problem by making modifications to the diagram trivially easy. 
 
 \section{Graph Drawing Algorithms}\label{bkg:graph-draw}
+Graphs are mathematical objects made of nodes and edges that let you travel between a pair of nodes. Directed graphs are graphs where the edges are one-way. If we treat objects of a category as nodes, and maps as edges of a directed graph we see that the problem of drawing a commutative diagram nicely is exactly the problem of drawing a directed graph nicely. Unfortunately, drawing a graph nicely is NP-complete \cite{10.1007/3-540-52698-6_1}. A variety of algorithms for drawing directed graphs exist \cite{di1994algorithms}.
 
 \section{Text Parsing}\label{bkg:text-parse}
 
