@@ -11,6 +11,10 @@
 
 \usepackage{microtype} % recommended, but you can remove if it causes problems
 \usepackage{biblatex} 
+\usepackage[british]{babel}
+\usepackage{csquotes}
+\DeclareFieldFormat{urldate}{%
+  (Accessed: \thefield{urlday}/\thefield{urlmonth}/\thefield{urlyear})}
 \usepackage{url}
 \usepackage{amsmath, amsfonts, amssymb, amsthm}
 \usepackage{mathrsfs}
@@ -166,7 +170,7 @@ Citations, such as \autocite{P1} or \autocite{P2}, can be generated using
 You may use any consistent reference style that you prefer, including ``(Author, Year)'' citations. 
 
 \chapter{Background}
-In this chapter, we give a brief introduction to the mathematical field of Category Theory (Section \ref{bkg:cat}) and define a commutative diagram (Section \ref{bkg:diag}). We then discuss exisitng methods of drawing commutative diagrams  relevant graph drawing algorithms that can be used to draw commutative diagrams (Section \ref{bkg:graph-draw}).
+In this chapter, we give a brief introduction to the mathematical field of Category Theory (Section \ref{bkg:cat}) and define a commutative diagram (Section \ref{bkg:diag}). We then discuss existing methods of drawing commutative diagrams (Section \ref{bkg:other}) and relevant graph drawing algorithms that can be used to draw commutative diagrams (Section \ref{bkg:graph-draw}).
 
 \section{Category Theory}\label{bkg:cat}
 Commutative diagrams are primarily used by mathematicians studying category theory, so to understand commutative diagrams and their uses it is helpful to know a bit about category theory.
@@ -193,12 +197,12 @@ When studying mathematics we encounter many different mathematical objects, such
     \end{itemize}
 \end{defn}
 
-An example of a category is $\mathbf{Set}$, where the objects are sets, and the maps are set functions between the sets. For another example, we could pick a set $A$ and represent it with a category $\cat{A}$ by simply letting $\ob{A} = A$. Since objects in a generic set have no intrinsic relationship with each other the maps in $\cat{A}$ will just be the required identity maps. We can apply a preordering to a set $A$, by for each pair of elements $a,b \in A$ deciding if $a \ge b$\footnote{The difference between a preorder and an order is that in an order if $a \ge b$ and $b \ge a$ then $a = b$. This is not the case in a preorder.}. Let $\mathbf{a}, \mathbf{b} \in \ob{A}$ represent $a,b \in A$ respectively, we can represent this preorder in $\cat A$ by adding a map from $\mathbf{a}$ to $\mathbf{b}$ if $a \ge b$. The identity maps give us that $a \ge a$, and composition gives us the property that if $a \ge b$ and $b \ge c$, then $a \ge c$, as we can compose the map from $\mathbf{a}$ to $\mathbf{b}$ and the map from $\mathbf{b}$ to $\mathbf{c}$ to get a map from $\mathbf{a}$ to $\mathbf{c}$. 
+An example of a category is $\mathbf{Set}$, where the objects are sets, and the maps are set functions between the sets. For another example, we could pick a set $A$ and represent it with a category $\cat{A}$ by simply letting $\ob{A} = A$. Since objects in a generic set have no intrinsic relationship with each other the maps in $\cat{A}$ will just be the required identity maps, so to make this example more interesting we can apply a preordering to a set $A$. We do this by for each pair of elements $a,b \in A$ deciding if $a \ge b$\footnote{The difference between a preorder and an order is that in an order if $a \ge b$ and $b \ge a$ then $a = b$. This is not the case in a preorder.}. Let $\mathbf{a}, \mathbf{b} \in \ob{A}$ represent $a,b \in A$ respectively. We can represent this preorder in $\cat A$ by adding a map from $\mathbf{a}$ to $\mathbf{b}$ if $a \ge b$. The identity maps give us that $a \ge a$, and composition gives us the property that if $a \ge b$ and $b \ge c$, then $a \ge c$, as we can compose the map from $\mathbf{a}$ to $\mathbf{b}$ and the map from $\mathbf{b}$ to $\mathbf{c}$ to get a map from $\mathbf{a}$ to $\mathbf{c}$. 
 
 Categories don't have to represent pure mathematical objects such as sets or numbers, for example, the category $\mathbf{Hask}$ \cite{wiki:hask} represents programs written in the language Haskell, with the objects being types and the maps being functions between those types. 
 
 \section{Commutative Diagrams}\label{bkg:diag}
-Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the maps like this does convey all the information we need, but in a way that's un-intuitive and hard to parse for a human reader, so let us find another way. Recall from the definition of a category (Definition \ref{def:cat}) that an alternative name for ``maps" are arrows. With this in mind, we draw each object spaced out on a blank page, and then for each pair of objects $(A', B')$ draw an arrow from $A'$ to $B'$ for each map from $A'$ to $B'$. Doing this to $\cat B$ gives us the diagram in Figure \ref{fig:comm-diag-ex1}.
+Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and non-identity maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the non-identity maps like this does convey all the information we need, but in a way that's un-intuitive and hard to parse for a human reader, so let us find another way. Recall from the definition of a category (Definition \ref{def:cat}) that an alternative name for ``maps" are arrows. With this in mind, we draw each object spaced out on a blank page, and then for each pair of objects $(A', B')$ draw an arrow from $A'$ to $B'$ for each non-identity map from $A'$ to $B'$. We skip the identity maps because we know every object has one by definition, and in most circumstances we don't gain anything by seeing them, similar to how we often won't write $a + 0$, $a \cdot 1$, or $a/1$ but instead just $a$. Doing this to $\cat B$ gives us the diagram in Figure \ref{fig:comm-diag-ex1}.
 
 \begin{figure}[h]
     \centering
@@ -215,7 +219,7 @@ Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and maps $\cat
     \label{fig:comm-diag-ex1}
 \end{figure}
 
-Define a path from an object $A'$ to an object $B'$ to be a chain of arrows from $A'$ to $B'$. We say a diagram commutes, or is a \emph{commutative diagram} if and only if for every pair of objects every path between those two objects is equivalent to every other path. For example, the diagram in Figure \ref{fig:comm-diag-ex1} is commutative if $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was commutative, then we would know that $h \circ f = g$ and $h \circ i = j$.
+Informally, define a path from an object $A'$ to an object $B'$ to be a chain of consecutive arrows from $A'$ to $B'$. We say a diagram commutes, or is a \emph{commutative diagram} if and only if for every pair of objects every path between those two objects is equivalent to every other path. For example, the diagram in Figure \ref{fig:comm-diag-ex1} is commutative if $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was commutative, then we would know that $h \circ f = g$ and $h \circ i = j$.
 
 %Add stuff about representing theorems (e.g. correspondence theorem) with comm diags?
 
@@ -232,22 +236,32 @@ Drawing commutative diagrams by hand is fairly easy and quick, but drawing a goo
 \LaTeX{} is a typesetting system frequently used by mathematicians to typeset mathematical documents. \LaTeX{} is recommended by the American Mathematical Society for authors who want to publish with them \cite{AMSlatexrec}, and a study in 2009 found that 96.9\% of submissions to 4 randomly selected mathematical journals were typeset in \LaTeX{} \cite{brischoux2009don}. Therefore, to look at how to create professional looking commutative diagrams, we should look at what \LaTeX{} has to offer.
 
 The Comprehensive \TeX{} Archive, or CTAN, is the main repository of \LaTeX{} packages. Browsing the ``Commutative Diagrams'' topic \cite{ctancommdiag} gives us 16 packets, some of which build on other packets. All the packets ask us to position the objects ourselves, either using cartesian coordinates or by using a grid-structure. %include example of this?
-In general, we have to define the starting position and direction of the arrows ourselves, but some packages such as CoDi %cite
-and DCpic %cite
-just ask us to define which objects the arrows go between.
+In general, we have to define the starting position and direction of the arrows ourselves, but some packages such as CoDi \cite{Brasolin_2023} and DCpic \cite{Quaresma_2013} just ask us to define which objects the arrows go between.
 
 The benefits and drawbacks of drawing commutative diagrams using these packages is almost inverse of hand-drawing, they produce professional looking diagrams, but the process of typing out the diagrams is much slower and more un-intuitive compared to the speed and simplicity of hand-drawing. This method also has the problem of a bad initial placement of objects leading to a messy diagram. The ease of fixing a bad placement relative to hand-drawing depends on the packet being used, ones that require us to define the position and direction of arrows will need large complicated re-writes, potentially from scratch, whereas packages that just require object positions will be fairly easy to re-organise. In conclusion, \LaTeX{} packages are good at producing professional looking commutative diagrams, but take much more effort to produce than hand-drawing.
 
 \subsection{Graphical Editors}
-Dedicated graphical editors for creating commutative diagrams with the tikzcd package, such as quiver %cite
-and tikzcd-editor, %cite
-mitigate the drawbacks of the \LaTeX{} packages by making the creation of the diagrams much easier. The graphical interface is much more intuitive to use than typing out the diagram manually, and the ability to drag objects helps mitigate the initial object problem by making modifications to the diagram trivially easy. 
+Dedicated graphical editors for creating commutative diagrams with the tikzcd package \cite{Stoffel_2021}, such as quiver \cite{Arkor_quiver_2023} and tikzcd-editor, \cite{shen_tikzcd-editor_2023} mitigate the drawbacks of the \LaTeX{} packages by making the creation of the diagrams much easier. The graphical interface is much more intuitive to use than typing out the diagram manually, and the ability to drag objects helps mitigate the initial object problem by making modifications to the diagram trivially easy. 
 
 \section{Graph Drawing Algorithms}\label{bkg:graph-draw}
-Graphs are mathematical objects made of nodes and edges that let you travel between a pair of nodes. Directed graphs are graphs where the edges are one-way. If we treat objects of a category as nodes, and maps as edges of a directed graph we see that the problem of drawing a commutative diagram nicely is exactly the problem of drawing a directed graph nicely. Unfortunately, drawing a graph nicely is NP-complete \cite{10.1007/3-540-52698-6_1}. A variety of algorithms for drawing directed graphs exist \cite{di1994algorithms}.
+There is very little existing research explicitly on algorithms for drawing commutative diagrams, but there is a lot of research on the topic of graph drawing. This section shows that we can use directed-graph drawing algorithms to draw commutative diagrams, and discusses the algorithm(s) that we (will) use to draw our commutative diagrams.
+
+First, we define a directed graph.
+\begin{defn}
+    A directed graph $G$ contains two collections:
+    \begin{enumerate}
+        \item A non-empty finite set $V(G)$ of vertices, called the vertex set of $G$.
+        \item A finite family $E(G)$ of ordered pairs of vertices $(v,w)$, where $v, w \in V(G)$, called edges. We say $(v,w)$ connects vertex $v$ to vertex $w$, but \emph{does not} connect vertex $w$ to vertex $v$.
+    \end{enumerate}
+\end{defn}
+ A family is a set where we do not ignore duplicates, e.g. for families $\{1, 1\} \ne \{1\}$.
+
+We can reduce the problem of commutative diagram drawing to directed graph drawing by treating each object to be drawn as a vertex and each map as an edge.
+Unfortunately, drawing a graph nicely is NP-complete \cite{10.1007/3-540-52698-6_1}. A variety of algorithms for drawing directed graphs exist \cite{di1994algorithms}, and we use... Any background on whatever algorithm(s) I end up using will go here.
+
 
 \section{Text Parsing}\label{bkg:text-parse}
-
+To input the category being drawn, the user will enter the objects and morphisms in text form, using a languages we make for this purpose. We then need to parse this text. We do this by matching each chunk of text to a token. These tokens can then be converted into a graph, which apply our drawing algorithm to, then we can output a commutative diagram.
 
 \chapter{Conclusions}
 
