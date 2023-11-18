@@ -1,7 +1,7 @@
-- [ ] Background Chapter (20/10/2023 Week 5 Sem 1 (hard))
-	- [ ] Figure out what actually goes in here
-	- [ ] What is a Commutative Diagram?
-	- [ ] Other Commutative Diagram parsers/representations
+- [x] Background Chapter (20/10/2023 Week 5 Sem 1 (hard))
+	- [x] Figure out what actually goes in here
+	- [x] What is a Commutative Diagram?
+	- [x] Other Commutative Diagram parsers/representations
 - [ ] Research & Design (Week 7 Sem 1)
 	- [ ] Choose/Design Representations
 		- [ ] Design language for set of equations
