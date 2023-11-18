@@ -201,8 +201,18 @@ An example of a category is $\mathbf{Set}$, where the objects are sets, and the 
 
 Categories don't have to represent pure mathematical objects such as sets or numbers, for example, the category $\mathbf{Hask}$ \cite{wiki:hask} represents programs written in the language Haskell, with the objects being types and the maps being functions between those types. 
 
-\section{Commutative Diagrams}\label{bkg:diag}
-Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and non-identity maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the non-identity maps like this does convey all the information we need, but in a way that's un-intuitive and hard to parse for a human reader, so let us find another way. 
+%\section{Commutative Diagrams}\label{bkg:diag}
+%Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and non-identity maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the non-identity maps like this does convey all the information we need, but in a way that's un-intuitive and hard to parse for a human reader, so let us find another way. Recall from the definition of a category (Definition \ref{def:cat}) that an alternative name for ``maps" are arrows. With this in mind, we draw each object spaced out on a blank page, and then for each pair of objects $(A', B')$ draw an arrow from $A'$ to $B'$ for each non-identity map from $A'$ to $B'$. We skip the identity maps because we know every object has one by definition, and in most circumstances we don't gain anything by seeing them, similar to how we often won't write $a + 0$, $a \cdot 1$, or $a/1$ but instead just $a$. Doing this to $\cat B$ gives us the diagram in Figure \ref{fig:comm-diag-ex1}.
+\section{Commutative Diagram}
+Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and non-identity maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the non-identity maps like this does convey a lot of information about the category, but in a way that's un-intuitive and hard to parse for a human reader. A more intuitive way of expressing this information is by using a directed graph, which is defined as:
+\begin{defn}
+    A directed graph $G$ contains two collections:
+    \begin{enumerate}
+        \item A non-empty finite set $V(G)$ of vertices, called the vertex set of $G$.
+        \item A finite multiset $E(G)$ of ordered pairs of vertices $(v,w)$, where $v, w \in V(G)$, called edges. We say $(v,w)$ connects vertex $v$ to vertex $w$, but \emph{does not} connect vertex $w$ to vertex $v$.
+    \end{enumerate}
+\end{defn}
+A multiset is a set where we do not ignore duplicates, e.g. for multisets $\{1, 1\} \ne \{1\}$. To represent a category with a directed graph we can let the vertices of the graph be the objects of the category, and the edges of the graph be the maps of the category. Generally we ignore the identity maps, as we know each object has one and they often don't tell us anything interesting, similar to how we often don't bother writing $a + 0$, $a \cdot 1$, or $a/1$, instead just writing $a$. Doing this to $\cat B$ gives us Figure \ref{fig:comm-diag-ex1}. 
 
 \begin{figure}[h]
     \centering
@@ -219,13 +229,21 @@ Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and non-identi
     \label{fig:comm-diag-ex1}
 \end{figure}
 
-Informally, define a path from an object $A'$ to an object $B'$ to be a chain of consecutive arrows from $A'$ to $B'$. We say a diagram commutes, or is a \emph{commutative diagram} if and only if for every pair of objects every path between those two objects is equivalent to every other path. For example, the diagram in Figure \ref{fig:comm-diag-ex1} is commutative if $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was commutative, then we would know that $h \circ f = g$ and $h \circ i = j$. Generally we won't draw a diagram unless either the diagram is commutative or we want to show that the diagram is commutative. 
+This representation helps show the structure and relationship between objects of the category much more intuitively, and also shows us what maps we can compose together much more easily than the list. Informally, define a path in a graph from a vertex $A'$ to a vertex $B'$ to be a chain of consecutive edges from $A'$ to $B'$. We can compose the maps corresponding to the edges in the path in our category to get a new map from object $A'$ to object $B'$ in the category. We call a graph-representation of a category a \emph{commutative diagram} if and only if for every pair of objects $A', B'$ in the category the maps corresponding to every path from $A'$ to $B'$ are equivalent.
+
+In Figure \ref{fig:comm-diag-ex1}, the only non-trivial paths (paths involving more than one edge) are the path from $A$ to $C$ through $B$, and the path from $D$ to $C$ through $B$, which form the composite maps $h \circ f$ and $h \circ i$ respectively. Therefore, for Figure \ref{fig:comm-diag-ex1} to be a commutative diagram we must have $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was a commutative diagram we would know that $h \circ f = g$ and $h \circ i = j$.
+
+Generally we don't draw a diagram unless it is commutative, or want to show that it is. Considering this, and the fact that it is impossible to tell if a diagram commutes from only a list of maps and object (we would have to know what the maps and objects are representing) we will be assuming all diagrams are commutative in this project.
+
+The main challenge of drawing a commutative diagram - and any graph-like diagram - is deciding where to place the vertices. A bad placement can cause a tangled web of intersecting edges, highly damaging the readability of the diagram severely reducing its usefulness. Algorithms for drawing nice looking graphs are discussed in Section \ref{bkg:graph-draw}.
+
+%Informally, define a path from an object $A'$ to an object $B'$ to be a chain of consecutive arrows from $A'$ to $B'$. We say a diagram commutes, or is a \emph{commutative diagram} if and only if for every pair of objects every path between those two objects is equivalent to every other path. For example, the diagram in Figure \ref{fig:comm-diag-ex1} is commutative if $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was commutative, then we would know that $h \circ f = g$ and $h \circ i = j$. Generally we won't draw a diagram unless either the diagram is commutative or we want to show that the diagram is commutative. 
 
 
 %Add stuff about representing theorems (e.g. correspondence theorem) with comm diags?
 
 %This paragraph could be moved to "Existing Commutative Diagmrams..." to point out how none of the exsiting methods solve this problem.
-When drawing a commutative diagram it can be hard to know where to initially position the objects, and a bad positioning can cause the diagram to be hard to read - defeating its purpose. This project aims to automate the creation of commutative diagrams from a list of maps, alleviating this problem.
+%When drawing a commutative diagram it can be hard to know where to initially position the objects, and a bad positioning can cause the diagram to be hard to read - defeating its purpose. This project aims to automate the creation of commutative diagrams from a list of maps, alleviating this problem.
 
 \section{Existing Commutative Diagram Drawing Methods}\label{bkg:other}
 There are many existing methods of drawing commutative diagrams, from hand-drawn to dedicated software. This section discusses some of these methods and the benefits and drawbacks of each.
@@ -313,24 +331,4 @@ an appendix, and point to it from the ethics declaration.
 If you had human participants, include information about how consent was
 gathered in an appendix, and point to it from the ethics declaration.
 This information is often a copy of a consent form.
-
-
-\section{Commutative Diagram}
-Consider a category $\cat B$, with objects $\ob{B} = \{A,B,C,D\}$ and non-identity maps $\cat{B}(A,B) = \{f\}$, $\cat{B}(A,C) = \{g\}$, $\cat{B}(B,C) = \{h\}$, $\cat{B}(D,B) = \{i\}$, $\cat{B}(D,C) = \{j\}$. Listing out all the non-identity maps like this does convey all the information we need, but in a way that's un-intuitive and hard to parse for a human reader. A more intuitive way of expressing this information is by using a directed graph, which is defined as:
-\begin{defn}
-    A directed graph $G$ contains two collections:
-    \begin{enumerate}
-        \item A non-empty finite set $V(G)$ of vertices, called the vertex set of $G$.
-        \item A finite multiset $E(G)$ of ordered pairs of vertices $(v,w)$, where $v, w \in V(G)$, called edges. We say $(v,w)$ connects vertex $v$ to vertex $w$, but \emph{does not} connect vertex $w$ to vertex $v$.
-    \end{enumerate}
-\end{defn}
-A multiset is a set where we do not ignore duplicates, e.g. for multisets $\{1, 1\} \ne \{1\}$. To represent a category with a directed graph we can let the vertices of the graph be the objects of the category, and the edges of the graph be the maps of the category. Generally we ignore the identity maps, as we know each object has one and they often don't tell us anything interesting, similar to how we often don't bother writing $a + 0$, $a \cdot 1$, or $a/1$, instead just writing $a$. Doing this to $\cat B$ gives us Figure \ref{fig:comm-diag-ex1}. 
-
-This representation helps show the structure and relationship between objects of the category much more intuitively, and also shows us what maps we can compose together much more easily than the list. Informally, define a path in a graph from a vertex $A'$ to a vertex $B'$ to be a chain of consecutive edges from $A'$ to $B'$. We can compose the maps corresponding to the edges in the path in our category to get a new map from object $A'$ to object $B'$ in the category. We call a graph-representation of a category a \emph{commutative diagram} if and only if for every pair of objects $A', B'$ in the category the maps corresponding to every path from $A'$ to $B'$ are equivalent.
-
-In Figure \ref{fig:comm-diag-ex1}, the only non-trivial paths (paths involving more than one edge) are the path from $A$ to $C$ through $B$, and the path from $D$ to $C$ through $B$, which form the composite maps $h \circ f$ and $h \circ i$ respectively. Therefore, for Figure \ref{fig:comm-diag-ex1} to be a commutative diagram we must have $h \circ f = g$ and $h \circ i = j$, or in the other direction if we were shown Figure \ref{fig:comm-diag-ex1} and told it was commutative we would know that $h \circ f = g$ and $h \circ i = j$.
-
-Generally we don't draw a diagram unless it is commutative, or want to show that it is. Considering this, and the fact that it is impossible to tell if a diagram commutes from only a list of maps and object (we would have to know the properties of both) we will be assuming all diagrams are commutative in this project.
-
-The main challenge of drawing a commutative diagram - and any graph-like diagram - is deciding where to place the vertices. A bad placement can cause a tangled web of intersecting edges, highly damaging the readability of the diagram severely reducing its usefulness. Algorithms for drawing nice looking graphs are discussed in Section \ref{bkg:graph-draw}.
 \end{document}
