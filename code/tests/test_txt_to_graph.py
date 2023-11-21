@@ -1,7 +1,6 @@
 import unittest
-from networkx import DiGraph, is_isomorphic
+from networkx import DiGraph
 from src.parser import Parser
-from os import getcwd
 
 
 class TestTxtToGraph(unittest.TestCase):
@@ -34,23 +33,23 @@ class TestTxtToGraph(unittest.TestCase):
 class TestExtractLabel(unittest.TestCase):
     def test_extract_label_basic(self):
         test_str_basic: str = '{A}'
-        self.assertEquals('A', Parser.extract_label(test_str_basic, 1))
+        self.assertEquals(('A', 2), Parser.extract_label(test_str_basic, 1))
 
     def test_extract_label_repeat(self):
         test_str_repeat: str = '{A}{B}'
-        self.assertEquals('A', Parser.extract_label(test_str_repeat, 1))
+        self.assertEquals(('A', 2), Parser.extract_label(test_str_repeat, 1))
 
     def test_extract_label_brackets(self):
         test_str_interior_brackets: str = '{\mathbf{I}^{\mathscal{A}}_{X,Y}}'
-        self.assertEquals('\mathbf{I}^{\mathscal{A}}_{X,Y}', Parser.extract_label(test_str_interior_brackets, 1))
+        self.assertEquals(('\mathbf{I}^{\mathscal{A}}_{X,Y}', 32), Parser.extract_label(test_str_interior_brackets, 1))
 
     def test_extract_label_complex(self):
         test_str_complex: str = '{[\mathscal{A}^{\op},X](-,-)}{H_{A}}'
-        self.assertEquals('[\mathscal{A}^{\op},X](-,-)', Parser.extract_label(test_str_complex, 1))
+        self.assertEquals(('[\mathscal{A}^{\op},X](-,-)', 28), Parser.extract_label(test_str_complex, 1))
 
     def test_extract_label_empty(self):
         test_str_empty: str = '{}{A}'
-        self.assertEquals('', Parser.extract_label(test_str_empty, 1))
+        self.assertEquals(('', 1), Parser.extract_label(test_str_empty, 1))
 
 
 if __name__ == '__main__':

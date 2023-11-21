@@ -1,4 +1,7 @@
+from typing import Any
+
 from networkx import DiGraph
+from math import ceil, sqrt
 
 
 class Parser:
@@ -11,30 +14,64 @@ class Parser:
                 num_labels: int = 0
                 labels[2] = ""  # clearing the maps name
                 for i in range(len(line)):
-                    c: str = line[i]
+                    c: str = line[i]  # iterate through each character
                     if c == " ":
                         continue
                     elif c == "{":
-                        if num_labels <= 2 and line[i+1] == "}":
+                        if num_labels <= 2 and line[i + 1] == "}":
                             raise Exception("Object labels cannot be empty")
-                        labels[num_labels] = self.extract_label(line, i + 1)
-                        i += len(labels[num_labels])
+                        labels[num_labels], i = self.extract_label(line, i + 1)
                         num_labels += 1
                         if num_labels > 3:
                             break
+                    # TODO: add error handling for unexpected characters
                 self.graph.add_edge(labels[0], labels[1], name=labels[2])
 
     def get_graph(self) -> DiGraph:
         return self.graph
 
     @staticmethod
-    def extract_label(line: str, start_pos: int):
-        unmatched_bracks: int = 0  # the number of unmatched opening brackets we've found
+    def extract_label(line: str, start_pos: int) -> tuple[str, int]:
+        unmatched_brackets: int = 0
         i: int = start_pos
-        while unmatched_bracks != 0 or line[i] != "}":
+        while not (unmatched_brackets == 0 and line[i] == "}"):
             if line[i] == "{":
-                unmatched_bracks += 1
+                unmatched_brackets += 1
             elif line[i] == "}":
-                unmatched_bracks -= 1
+                unmatched_brackets -= 1
             i += 1
-        return line[start_pos:i]
+        return line[start_pos:i], i
+
+    def to_codi(self) -> str:
+        node_matrix = self.place_nodes()
+        num_latex_lines = 1 + len(self.graph.edges)
+        latex = [""] * num_latex_lines  # each element is a line in LaTeX
+
+    @staticmethod
+    def lists_to_latex_matrix(lst: list[list[Any]]) -> str:
+        matrix = [""] * (len(lst) * len(lst[0]))
+        i = 0
+        for line in lst:
+            for col in range(len(line)):
+                elem = line[col]
+                if col == len(line) - 1:
+                    matrix[i] = f"{elem} \\\\"
+                    i += 1
+                else:
+                    matrix[i] = f"{elem} &"
+                    i += 1
+        return " ".join(matrix)
+
+    def place_nodes(self) -> list[list[str]]:
+        # TODO: better algo
+        nodes = self.graph.nodes
+        matrix_size: int = ceil(sqrt(len(nodes)))
+        ob_matrix: list[list[str]] = [[""] * matrix_size] * matrix_size
+        line: int = 0
+        col: int = 0
+        for node in nodes:
+            ob_matrix[line][col] = node
+            col = (col + 1) % matrix_size
+            if col == 0:
+                line += 1
+        return ob_matrix
