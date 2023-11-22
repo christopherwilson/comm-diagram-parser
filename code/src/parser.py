@@ -46,6 +46,13 @@ class Parser:
         node_matrix = self.place_nodes()
         num_latex_lines = 1 + len(self.graph.edges)
         latex = [""] * num_latex_lines  # each element is a line in LaTeX
+        latex_matrix = self.lists_to_latex_matrix(node_matrix)
+        latex[0] = "\\obj {" + latex_matrix + "};"
+        i = 1
+        for edge in self.graph.edges.data():
+            latex[i] = f"\\mor {edge[0]} %s:-> {edge[1]};" % edge[2]["name"]
+            i += 1
+        return "\n".join(latex)
 
     @staticmethod
     def lists_to_latex_matrix(lst: list[list[Any]]) -> str:
@@ -66,7 +73,7 @@ class Parser:
         # TODO: better algo
         nodes = self.graph.nodes
         matrix_size: int = ceil(sqrt(len(nodes)))
-        ob_matrix: list[list[str]] = [[""] * matrix_size] * matrix_size
+        ob_matrix: list[list[str]] = [[""] * matrix_size for _ in range(matrix_size)]
         line: int = 0
         col: int = 0
         for node in nodes:

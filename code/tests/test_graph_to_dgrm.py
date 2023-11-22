@@ -1,5 +1,4 @@
 import unittest
-from networkx import DiGraph
 from src.parser import Parser
 
 
@@ -37,3 +36,7 @@ class TestLstsToLatex(unittest.TestCase):
         ]
         txt = "A & B & C \\\\ D & E & F \\\\ G \\\\  "
         self.assertEquals(txt, Parser.lists_to_latex_matrix(lst))
+
+
+if __name__ == '__main__':
+    unittest.main()
