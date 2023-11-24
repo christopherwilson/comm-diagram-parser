@@ -13,16 +13,17 @@ class Parser:
             for line in f:
                 num_labels: int = 0
                 labels[2] = ""  # clearing the maps name
+                j = 0
                 for i in range(len(line)):
-                    c: str = line[i]  # iterate through each character
-                    if c == " ":
+                    if i < j:
                         continue
-                    elif c == "{":
+                    c: str = line[i]  # iterate through each character
+                    if c == "{":
                         if num_labels <= 2 and line[i + 1] == "}":
                             raise Exception("Object labels cannot be empty")
-                        labels[num_labels], i = self.extract_label(line, i + 1)
+                        labels[num_labels], j = self.extract_label(line, i + 1)
                         num_labels += 1
-                        if num_labels > 3:
+                        if num_labels >= 3:
                             break
                     # TODO: add error handling for unexpected characters
                 self.graph.add_edge(labels[0], labels[1], name=labels[2])
@@ -32,15 +33,15 @@ class Parser:
 
     @staticmethod
     def extract_label(line: str, start_pos: int) -> tuple[str, int]:
-        unmatched_brackets: int = 0
+        unmatched_brackets: int = 1
         i: int = start_pos
-        while not (unmatched_brackets == 0 and line[i] == "}"):
+        while unmatched_brackets != 0:
             if line[i] == "{":
                 unmatched_brackets += 1
             elif line[i] == "}":
                 unmatched_brackets -= 1
             i += 1
-        return line[start_pos:i], i
+        return line[start_pos-1:i], i
 
     def to_codi(self) -> str:
         node_matrix = self.place_nodes()

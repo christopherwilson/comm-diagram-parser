@@ -1,0 +1,4 @@
+{\mathscr{A}^{\mathrm{op}} \times \mathscr{B}}{\mathscr{A}^{\mathrm{op}} \times \mathscr{A}}{1 \times G}
+{\mathscr{A}^{\mathrm{op}} \times \mathscr{B}}{\mathscr{B}^{\mathrm{op}} \times \mathscr{B}}{F^{\mathrm{op}} \times 1}
+{\mathscr{A}^{\mathrm{op}} \times \mathscr{A}}{\mathbf{Set.}}{\mathrm{Hom}_{\mathscr{A}}}
+{\mathscr{B}^{\mathrm{op}} \times \mathscr{B}}{\mathbf{Set.}}{\mathrm{Hom}_{\mathscr{B}}}
