@@ -1,14 +1,14 @@
 import unittest
-from src.parser import Parser
+from src.diagram_parser import DiagramParser
 
 
 class TestTxtToCoDi(unittest.TestCase):
     def test_exfig_to_codi(self):
-        prs = Parser("testfiles/exfig.txt")
+        prs = DiagramParser("testfiles/exfig.txt")
         print(prs.to_codi())
 
     def test_parse_complex_labels(self):
-        prs = Parser("testfiles/complex_labels.txt")
+        prs = DiagramParser("testfiles/complex_labels.txt")
         print(prs.to_codi())
 
 

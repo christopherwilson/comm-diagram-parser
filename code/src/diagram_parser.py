@@ -5,7 +5,7 @@ import networkx as nx
 from math import ceil, sqrt
 
 
-class Parser:
+class DiagramParser:
 
     def __init__(self, file_path: str):
         """
