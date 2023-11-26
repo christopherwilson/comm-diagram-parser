@@ -1,4 +1,5 @@
 {\mathscr{A}^{\mathrm{op}} \times \mathscr{B}}{\mathscr{A}^{\mathrm{op}} \times \mathscr{A}}{1 \times G}
 {\mathscr{A}^{\mathrm{op}} \times \mathscr{B}}{\mathscr{B}^{\mathrm{op}} \times \mathscr{B}}{F^{\mathrm{op}} \times 1}
-{\mathscr{A}^{\mathrm{op}} \times \mathscr{A}}{\mathbf{Set.}}{\mathrm{Hom}_{\mathscr{A}}}
-{\mathscr{B}^{\mathrm{op}} \times \mathscr{B}}{\mathbf{Set.}}{\mathrm{Hom}_{\mathscr{B}}}
+{\mathscr{A}^{\mathrm{op}} \times \mathscr{A}}{\mathbf{Set}}{\mathrm{Hom}_{\mathscr{A}}}
+{\mathscr{B}^{\mathrm{op}} \times \mathscr{B}}{\mathbf{Set}}{\mathrm{Hom}_{\mathscr{B}}}
+% https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXG1hdGhzY3J7QX1ee1xcbWF0aHJte29wfX0gXFx0aW1lcyBcXG1hdGhzY3J7Qn0iXSxbMSwwLCJcXG1hdGhzY3J7QX1ee1xcbWF0aHJte29wfX0gXFx0aW1lcyBcXG1hdGhzY3J7QX0iXSxbMCwxLCJcXG1hdGhzY3J7Qn1ee1xcbWF0aHJte29wfX0gXFx0aW1lcyBcXG1hdGhzY3J7Qn0iXSxbMSwxLCJcXG1hdGhiZntTZXR9Il0sWzAsMSwiezEgXFx0aW1lcyBHfSJdLFswLDIsIntGXntcXG1hdGhybXtvcH19IFxcdGltZXMgMX0iLDJdLFsxLDMsIntcXG1hdGhybXtIb219X3tcXG1hdGhzY3J7QX19fSJdLFsyLDMsIntcXG1hdGhybXtIb219X3tcXG1hdGhzY3J7Qn19fSIsMl1d

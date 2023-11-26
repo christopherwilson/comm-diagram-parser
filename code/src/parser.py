@@ -7,12 +7,15 @@ from math import ceil, sqrt
 
 class Parser:
 
+
     def __init__(self, file_path: str):
         self.graph: nx.DiGraph = nx.DiGraph()
         with (open(file_path, 'r') as f):
             labels = [""] * 3
             num_labels = 3
             for line in f:
+                if line[0] == "%":  # lets us comment
+                    continue
                 if num_labels < 3:
                     raise Exception("Invalid")
                 num_labels = 0
