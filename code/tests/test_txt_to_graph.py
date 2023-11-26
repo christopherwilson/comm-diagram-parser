@@ -18,16 +18,7 @@ class TestTxtToGraph(unittest.TestCase):
         self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
 
     def test_parse_exfig_no_lbl(self):
-        G = DiGraph()
-        G.add_edges_from([
-            ("{A}", "{B}", {"name": ""}),
-            ("{A}", "{C}", {"name": ""}),
-            ("{B}", "{C}", {"name": ""}),
-            ("{D}", "{B}", {"name": ""}),
-            ("{D}", "{C}", {"name": ""})
-        ])
-        prs = Parser("testfiles/exfig_no_lbl.txt")
-        self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
+        self.assertRaises(Exception, Parser, "testfiles/exfig_no_lbl.txt")
 
     def test_parse_complex(self):
         G = DiGraph()
@@ -59,19 +50,20 @@ class TestExtractLabel(unittest.TestCase):
         self.assertEquals(('{A}', 3), Parser.extract_label(test_str_repeat, 1))
 
     def test_extract_label_brackets(self):
-        test_str_interior_brackets: str = '{\mathbf{I}^{\mathscal{A}}_{X,Y}}'
+        test_str_interior_brackets: str = '{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}'
         self.assertEquals(('{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}', 33), Parser.extract_label(test_str_interior_brackets, 1))
 
     def test_extract_label_complex(self):
-        test_str_complex: str = '{[\mathscal{A}^{\op},X](-,-)}{H_{A}}'
-        self.assertEquals(('{[\mathscal{A}^{\op},X](-,-)}', 29), Parser.extract_label(test_str_complex, 1))
+        test_str_complex: str = '{[\\mathscal{A}^{\\op},X](-,-)}{H_{A}}'
+        self.assertEquals(('{[\\mathscal{A}^{\\op},X](-,-)}', 29), Parser.extract_label(test_str_complex, 1))
 
     def test_extract_label_empty(self):
         test_str_empty: str = '{}{A}'
         self.assertEquals(('{}', 2), Parser.extract_label(test_str_empty, 1))
 
     def test_extract_label_complex_file(self):
-        line1 = ["{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}{1 \\times G}",
+        line1 = ["{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{"
+                 "A}}{1 \\times G}",
                  "{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}{1 \\times G}",
                  "{1 \\times G}"]
         self.assertEquals("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}", Parser.extract_label(line1[0], 1)[0])

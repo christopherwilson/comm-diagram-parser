@@ -7,10 +7,6 @@ class TestTxtToCoDi(unittest.TestCase):
         prs = Parser("testfiles/exfig.txt")
         print(prs.to_codi())
 
-    def test_exfig_no_lbl_to_codi(self):
-        prs = Parser("testfiles/exfig_no_lbl.txt")
-        print(prs.to_codi())
-
     def test_parse_complex_labels(self):
         prs = Parser("testfiles/complex_labels.txt")
         print(prs.to_codi())

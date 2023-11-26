@@ -1,17 +1,21 @@
+from importlib.resources import path
 from typing import Any
 
-from networkx import DiGraph
+import networkx as nx
 from math import ceil, sqrt
 
 
 class Parser:
 
     def __init__(self, file_path: str):
-        self.graph: DiGraph = DiGraph()
+        self.graph: nx.DiGraph = nx.DiGraph()
         with (open(file_path, 'r') as f):
             labels = [""] * 3
+            num_labels = 3
             for line in f:
-                num_labels: int = 0
+                if num_labels < 3:
+                    raise Exception("Invalid")
+                num_labels = 0
                 labels[2] = ""  # clearing the maps name
                 j = 0
                 for i in range(len(line)):
@@ -19,7 +23,7 @@ class Parser:
                         continue
                     c: str = line[i]  # iterate through each character
                     if c == "{":
-                        if num_labels <= 2 and line[i + 1] == "}":
+                        if num_labels <= 3 and line[i + 1] == "}":
                             raise Exception("Object labels cannot be empty")
                         labels[num_labels], j = self.extract_label(line, i + 1)
                         num_labels += 1
@@ -28,7 +32,7 @@ class Parser:
                     # TODO: add error handling for unexpected characters
                 self.graph.add_edge(labels[0], labels[1], name=labels[2])
 
-    def get_graph(self) -> DiGraph:
+    def get_graph(self) -> nx.DiGraph:
         return self.graph
 
     @staticmethod
@@ -83,3 +87,31 @@ class Parser:
             if col == 0:
                 line += 1
         return ob_matrix
+
+    def to_func_comps(self):
+        # noinspection PyCallingNonCallable
+        doms = [node for node in self.graph.nodes if self.graph.out_degree(node) > 1]
+        # noinspection PyCallingNonCallable
+        codoms = [node for node in self.graph.nodes if self.graph.in_degree(node) > 1]
+
+        eqs = []
+        for dom in doms:
+            for codom in codoms:
+                funcs = []
+                paths = list(nx.algorithms.all_simple_edge_paths(self.graph, dom, codom))
+                if len(paths) <= 1:
+                    continue
+                for path in paths:
+                    if not path:
+                        continue
+                    funcs.append(self.path_to_func_comp(path))
+                eqs.append(" = ".join(funcs))
+        return "\n".join(eqs)
+
+    def path_to_func_comp(self, path: list[tuple]):
+        funcs = [""]*len(path)
+        i = 0
+        for edge in reversed(path):
+            funcs[i] = self.graph.get_edge_data(edge[0], edge[1]).get("name")
+            i += 1
+        return " o ".join(funcs)
