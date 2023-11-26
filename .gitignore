@@ -11,3 +11,7 @@ project-templates-main-ug/ug/skeleton.pdf
 project-templates-main-ug/ug/skeleton.run.xml
 project-templates-main-ug/ug/skeleton.synctex.gz
 project-templates-main-ug/ug/skeleton.toc
+code/tests/testfiles/temp
+*.pyc
+*.iml
+*.xml
