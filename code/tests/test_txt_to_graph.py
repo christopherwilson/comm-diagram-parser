@@ -30,10 +30,10 @@ class TestTxtToGraph(unittest.TestCase):
              "{\\mathscr{B}^{\\mathrm{op}} \\times \\mathscr{B}}",
              {"name": "{F^{\\mathrm{op}} \\times 1}"}),
             ("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}",
-             "{\\mathbf{Set.}}",
+             "{\\mathbf{Set}}",
              {"name": "{\\mathrm{Hom}_{\\mathscr{A}}}"}),
             ("{\\mathscr{B}^{\\mathrm{op}} \\times \\mathscr{B}}",
-             "{\\mathbf{Set.}}",
+             "{\\mathbf{Set}}",
              {"name": "{\\mathrm{Hom}_{\\mathscr{B}}}"})
         ])
         prs = DiagramParser("testfiles/complex_labels.txt")

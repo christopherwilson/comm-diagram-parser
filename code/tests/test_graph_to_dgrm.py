@@ -8,7 +8,7 @@ class TestLstsToLatex(unittest.TestCase):
             [1, 2],
             [3, 4]
         ]
-        txt = "1 & 2 \\\\ 3 & 4 \\\\"
+        txt = "1 & 2 \\\\ 3 & 4"
         self.assertEquals(txt, DiagramParser.lists_to_latex_matrix(lst))
 
     def test_two_three(self):
@@ -16,7 +16,7 @@ class TestLstsToLatex(unittest.TestCase):
             ["A", "B", "C"],
             ["D", "E", "F"]
         ]
-        txt = "A & B & C \\\\ D & E & F \\\\"
+        txt = "A & B & C \\\\ D & E & F"
         self.assertEquals(txt, DiagramParser.lists_to_latex_matrix(lst))
 
     def test_three_two(self):
@@ -25,7 +25,7 @@ class TestLstsToLatex(unittest.TestCase):
             ["C", "D"],
             ["E", "F"]
         ]
-        txt = "A & B \\\\ C & D \\\\ E & F \\\\"
+        txt = "A & B \\\\ C & D \\\\ E & F"
         self.assertEquals(txt, DiagramParser.lists_to_latex_matrix(lst))
 
     def test_uncompleted(self):
@@ -34,7 +34,7 @@ class TestLstsToLatex(unittest.TestCase):
             ["D", "E", "F"],
             ["G"]
         ]
-        txt = "A & B & C \\\\ D & E & F \\\\ G \\\\  "
+        txt = "A & B & C \\\\ D & E & F \\\\ G"
         self.assertEquals(txt, DiagramParser.lists_to_latex_matrix(lst))
 
 

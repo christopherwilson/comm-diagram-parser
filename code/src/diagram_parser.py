@@ -89,19 +89,12 @@ class DiagramParser:
         :param lst: a list of lists representing a matrix. Each sub-list should be of equal length.
         :return: A string representing ``lst`` as a latex matrix
         """
-        # TODO replace this with code that uses .join
-        matrix = [""] * (len(lst) * len(lst[0]))
+        rows = [""] * len(lst)
         i = 0
         for line in lst:
-            for col in range(len(line)):
-                elem = line[col]
-                if col == len(line) - 1:
-                    matrix[i] = f"{elem} \\\\"
-                    i += 1
-                else:
-                    matrix[i] = f"{elem} &"
-                    i += 1
-        return " ".join(matrix)
+            rows[i] = " & ".join(list(map(str, line)))
+            i += 1
+        return " \\\\ ".join(rows)
 
     def place_nodes(self) -> list[list[str]]:
         """
