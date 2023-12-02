@@ -5,8 +5,8 @@ from src.diagram_parser import DiagramParser
 class TestTxtToFuncCopm(unittest.TestCase):
     def test_exfig(self):
         prs = DiagramParser("testfiles/exfig.txt")
-        expected = ("{h} o {f} = {g}\n"
-                    "{h} o {i} = {j}")
+        expected = ("{h}{f} = {g}\n"
+                    "{h}{i} = {j}")
         self.assertEquals(prs.to_func_comps(), expected)
 
     def test_rectangle(self):
@@ -20,7 +20,7 @@ class TestPathToFuncComp(unittest.TestCase):
     def test_exfig(self):
         prs = DiagramParser("testfiles/exfig.txt")
         path = [("{A}", "{B}"), ("{B}", "{C}")]
-        expected = "{h} o {f}"
+        expected = "{h}{f}"
         actual = prs.path_to_func_comp(path)
         self.assertEquals(actual, expected)
 

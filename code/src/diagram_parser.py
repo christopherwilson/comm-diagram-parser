@@ -4,8 +4,10 @@ from typing import Any
 import networkx as nx
 from math import ceil, sqrt
 
+from src.parser import Parser
 
-class DiagramParser:
+
+class DiagramParser(Parser):
 
     def __init__(self, file_path: str):
         """
@@ -23,7 +25,7 @@ class DiagramParser:
         ``Domain``, ``Codomain`` and ``Function`` cannot be the empty string, but they may contain \"{\" and \"}\".
         :param file_path: Location of the text representation of the commutative diagram.
         """
-        self.graph: nx.DiGraph = nx.DiGraph()
+        super().__init__()
         with (open(file_path, 'r') as f):
             labels = [""] * 3
             num_labels = 3
@@ -48,27 +50,6 @@ class DiagramParser:
                             break
                     # TODO: add error handling for unexpected characters
                 self.graph.add_edge(labels[0], labels[1], name=labels[2])
-
-    def get_graph(self) -> nx.DiGraph:
-        return self.graph
-
-    @staticmethod
-    def extract_label(line: str, start_pos: int) -> tuple[str, int]:
-        """
-        Extracts the label attached to a domain, codomain, or function in the commutative diagram text representation.
-        :param line: line of text containing the label, should be of the form ``"some text{Label}some more text"``.
-        :param start_pos: the position of the first character of the Label.
-        :return: ``({Label},`` the position of the closing "``}``"``)``
-        """
-        unmatched_brackets: int = 1  # we should always start with an unmatched bracket
-        i: int = start_pos
-        while unmatched_brackets != 0:
-            if line[i] == "{":
-                unmatched_brackets += 1
-            elif line[i] == "}":
-                unmatched_brackets -= 1
-            i += 1
-        return line[start_pos - 1:i], i  # the start position is just after the opening {, so we need to decrement
 
     def to_codi(self) -> str:
         node_matrix = self.place_nodes()
@@ -149,4 +130,4 @@ class DiagramParser:
         for edge in reversed(path):
             funcs[i] = self.graph.get_edge_data(edge[0], edge[1]).get("name")
             i += 1
-        return " o ".join(funcs)
+        return "".join(funcs)
