@@ -1,0 +1,2 @@
+{g}{f} = {g'}{f'}
+%https://q.uiver.app/#q=WzAsNCxbMCwwLCJcXGJ1bGxldCJdLFsxLDAsIlxcYnVsbGV0Il0sWzEsMSwiXFxidWxsZXQiXSxbMCwxLCJcXGJ1bGxldCJdLFswLDEsImYiXSxbMSwyLCJnIl0sWzAsMywiZiciLDJdLFszLDIsImcnIiwyXV0=

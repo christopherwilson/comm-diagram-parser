@@ -14,7 +14,7 @@ class TestTxtToGraph(unittest.TestCase):
             ("{D}", "{C}", {"name": "{j}"})
         ])
 
-        prs = DiagramParser("testfiles/exfig.txt")
+        prs = DiagramParser("testfiles/graph_txt/exfig.txt")
         self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
 
     def test_parse_exfig_no_lbl(self):
@@ -36,7 +36,7 @@ class TestTxtToGraph(unittest.TestCase):
              "{\\mathbf{Set}}",
              {"name": "{\\mathrm{Hom}_{\\mathscr{B}}}"})
         ])
-        prs = DiagramParser("testfiles/complex_labels.txt")
+        prs = DiagramParser("testfiles/graph_txt/complex_labels.txt")
         self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
 
 

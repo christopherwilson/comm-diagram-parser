@@ -26,7 +26,7 @@ class DiagramParser(Parser):
         :param file_path: Location of the text representation of the commutative diagram.
         """
         super().__init__()
-        with (open(file_path, 'r') as f):
+        with open(file_path, 'r') as f:
             labels = [""] * 3
             num_labels = 3
             for line in f:
