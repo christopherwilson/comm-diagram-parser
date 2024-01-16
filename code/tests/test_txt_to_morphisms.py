@@ -51,13 +51,21 @@ class TestContractDomain(unittest.TestCase):
 
     def verify_result(self, expected_edges, expected_graph, expected_morphs, expected_morphs_by_codomain,
                       expected_morphs_by_domain, parser):
+        nonempty_morphs_by_domain = {}
+        for key in parser.morphs_by_domain.keys():
+            if parser.morphs_by_domain[key]:
+                nonempty_morphs_by_domain[key] = parser.morphs_by_domain[key]
+        nonempty_morphs_by_codomain = {}
+        for key in parser.morphs_by_codomain.keys():
+            if parser.morphs_by_codomain[key]:
+                nonempty_morphs_by_codomain[key] = parser.morphs_by_codomain[key]
         for edge in list(parser.graph.edges.data()):
             expected_edges.pop(expected_edges.index(edge))
         self.assertTrue(expected_edges == [])
         self.assertTrue(nx.is_isomorphic(parser.graph, expected_graph))
         self.assertEqual(expected_morphs, parser.morphs)
-        self.assertEqual(expected_morphs_by_domain, parser.morphs_by_domain)
-        self.assertEqual(expected_morphs_by_codomain, parser.morphs_by_codomain)
+        self.assertEqual(expected_morphs_by_domain, nonempty_morphs_by_domain)
+        self.assertEqual(expected_morphs_by_codomain, nonempty_morphs_by_codomain)
 
     def test_two_maps(self):
         parser = MorphismParser("testfiles/blank.txt")
@@ -66,7 +74,7 @@ class TestContractDomain(unittest.TestCase):
         parser.morphs_by_codomain = {1: ["f"], 3: ["g"]}
         parser.graph = nx.DiGraph([(0, 1, {"name": "f"}), (2, 3, {"name": "g"})])
 
-        parser.contract_domain(2, 0)
+        parser.contract_objects(2, 0)
 
         expected_edges = [(0, 1, {"name": "f"}), (0, 3, {"name": "g"})]
         expected_graph = nx.DiGraph([(0, 1, {"name": "f"}), (0, 3, {"name": "g"})])
@@ -125,7 +133,7 @@ class TestContractDomain(unittest.TestCase):
         ]
         expected_graph = nx.DiGraph(expected_edges)
 
-        parser.contract_domain(4, 1)
+        parser.contract_objects(4, 1)
 
         self.verify_result(expected_edges, expected_graph, expected_morphs, expected_morphs_by_codomain,
                            expected_morphs_by_domain, parser)
@@ -137,7 +145,7 @@ class TestContractDomain(unittest.TestCase):
         parser.morphs_by_codomain = {1: ["f"], 3: ["g"]}
         parser.graph = nx.DiGraph([(0, 1, {"name": "f"}), (2, 3, {"name": "g"})])
 
-        parser.contract_domain(3, 1)
+        parser.contract_objects(3, 1)
 
         expected_edges = [(0, 1, {"name": "f"}), (2, 1, {"name": "g"})]
         expected_graph = nx.DiGraph(expected_edges)

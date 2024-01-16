@@ -42,13 +42,13 @@ class MorphismParser(Parser):
                     # if this is the first morphism in the chain
                     if i == 1 and self.morphs[morph][0] != domain:
                         new_domain = self.morphs[morph][0]
-                        self.contract_domain(domain, new_domain)
+                        self.contract_objects(domain, new_domain)
                         domain = new_domain
                     if next_morph in self.morphs.keys():
                         if self.morphs[morph][1] != self.morphs[next_morph][0]:
                             new_next_domain = self.morphs[morph][1]
                             old_next_domain = self.morphs[next_morph][0]
-                            self.contract_domain(old_next_domain, new_next_domain)
+                            self.contract_objects(old_next_domain, new_next_domain)
                             prev_obj = new_next_domain
                             continue
                     else:
@@ -74,7 +74,7 @@ class MorphismParser(Parser):
             if morph in self.morphs.keys():
                 if self.morphs[morph][1] != codomain:
                     new_codomain = self.morphs[morph][1]
-                    self.contract_domain(codomain, new_codomain)
+                    self.contract_objects(codomain, new_codomain)
                     codomain = new_codomain
                 else:
                     continue
@@ -93,23 +93,31 @@ class MorphismParser(Parser):
         else:
             self.morphs_by_codomain[codomain] = [morph]
 
-    def contract_domain(self, domain, new_domain):
-        # ensure we have a spot for the new_domain in lists
-        if new_domain not in self.morphs_by_domain:
-            self.morphs_by_domain[new_domain] = []
-        if new_domain not in self.morphs_by_codomain:
-            self.morphs_by_codomain[new_domain] = []
-        nx.contracted_nodes(self.graph, new_domain, domain, copy=False)
-        if domain in self.morphs_by_domain.keys():
-            for adjusted_morph in self.morphs_by_domain.pop(domain):
-                self.morphs_by_domain[new_domain].append(adjusted_morph)
+    def contract_objects(self, obj, new_obj):
+        """
+        Takes every morphism going into/out of ``obj``, and makes the morphism go into/out of ``new_obj``, then
+        deletes ``obj``.
+        :param obj:
+        :param new_obj:
+        """
+        # ensure we have a spot for the new_obj in lists
+        if new_obj not in self.morphs_by_domain:
+            self.morphs_by_domain[new_obj] = []
+        if new_obj not in self.morphs_by_codomain:
+            self.morphs_by_codomain[new_obj] = []
+
+        # contract objects
+        nx.contracted_nodes(self.graph, new_obj, obj, copy=False)
+        if obj in self.morphs_by_domain.keys():
+            for adjusted_morph in self.morphs_by_domain.pop(obj):
+                self.morphs_by_domain[new_obj].append(adjusted_morph)
                 prev_codomain = self.morphs[adjusted_morph][1]
-                self.morphs[adjusted_morph] = (new_domain, prev_codomain)
-        if domain in self.morphs_by_codomain.keys():
-            for adjusted_morph in self.morphs_by_codomain.pop(domain):
-                self.morphs_by_codomain[new_domain].append(adjusted_morph)
+                self.morphs[adjusted_morph] = (new_obj, prev_codomain)
+        if obj in self.morphs_by_codomain.keys():
+            for adjusted_morph in self.morphs_by_codomain.pop(obj):
+                self.morphs_by_codomain[new_obj].append(adjusted_morph)
                 prev_domain = self.morphs[adjusted_morph][0]
-                self.morphs[adjusted_morph] = (prev_domain, new_domain)
+                self.morphs[adjusted_morph] = (prev_domain, new_obj)
 
     def parse_line(self, line: str):
         i = 0

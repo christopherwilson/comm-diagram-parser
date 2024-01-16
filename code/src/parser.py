@@ -43,7 +43,7 @@ class Parser:
             i += 1
         return " \\\\ ".join(rows)
 
-    def place_nodes(self) -> list[list[str]]:
+    def to_node_matrix(self) -> list[list[str]]:
         """
         Positions all the nodes of the graph stored in ``self.graph`` in a matrix.
         :return: a list of lists containing all the labels of the nodes, and potentially some empty strings
@@ -56,22 +56,35 @@ class Parser:
         col: int = 0
         for node in nodes:
             ob_matrix[line][col] = node
-            col = (col + 1) % matrix_size
-            if col == 0:
+            col += 1
+            if col == matrix_size:
+                col = 0
                 line += 1
         return ob_matrix
 
-    def to_codi(self) -> str:
-        node_matrix = self.place_nodes()
-        num_latex_lines = 1 + len(self.graph.edges)
-        latex = [""] * num_latex_lines  # each element is a line in LaTeX
-        latex_matrix = self.lists_to_latex_matrix(node_matrix)
-        latex[0] = "\\obj {" + latex_matrix + "};"
-        i = 1
-        for edge in self.graph.edges.data():
-            latex[i] = f"\\mor {edge[0]} %s:-> {edge[1]};" % edge[2]["name"]
-            i += 1
-        return "\n".join(latex)
+    # def to_codi(self) -> str:
+    #     node_matrix = self.place_nodes()
+    #     num_latex_lines = 1 + len(self.graph.edges)
+    #     latex = [""] * num_latex_lines  # each element is a line in LaTeX
+    #     latex_matrix = self.lists_to_latex_matrix(node_matrix)
+    #     latex[0] = "\\obj {" + latex_matrix + "};"
+    #     i = 1
+    #     for edge in self.graph.edges.data():
+    #         latex[i] = f"\\mor {edge[0]} %s:-> {edge[1]};" % edge[2]["name"]
+    #         i += 1
+    #     return "\n".join(latex)
+
+    def position_nodes(self):
+        # TODO better algo
+        num_cols = ceil(sqrt(len(self.graph.nodes)))
+        x = 0
+        y = 0
+        for node in self.graph.nodes:
+            node["pos"] = (x, y)
+            x += 1
+            if x == num_cols:
+                x = 0
+                y -= 1
 
     def path_to_func_comp(self, path: list[tuple]):
         """
