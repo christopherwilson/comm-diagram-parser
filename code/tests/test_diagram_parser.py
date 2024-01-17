@@ -1,6 +1,34 @@
 import unittest
+
 from networkx import DiGraph
+
 from src.diagram_parser import DiagramParser
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+class TestDiagTextToFuncComp(unittest.TestCase):
+    def test_exfig(self):
+        prs = DiagramParser("testfiles/graph_txt/exfig.txt")
+        expected = ("{h}{f} = {g}\n"
+                    "{h}{i} = {j}")
+        self.assertEquals(prs.to_func_comps(), expected)
+
+    def test_rectangle(self):
+        prs = DiagramParser("testfiles/graph_txt/rectangle.txt")
+        func_comps = prs.to_func_comps()
+        print(func_comps)
+        self.assertEquals(func_comps.count("\n"), 2)
+
+
+class TestPathToFuncComp(unittest.TestCase):
+    def test_exfig(self):
+        prs = DiagramParser("testfiles/graph_txt/exfig.txt")
+        path = [("{A}", "{B}"), ("{B}", "{C}")]
+        expected = "{h}{f}"
+        actual = prs.path_to_func_comp(path)
+        self.assertEquals(actual, expected)
 
 
 class TestTxtToGraph(unittest.TestCase):
@@ -38,36 +66,3 @@ class TestTxtToGraph(unittest.TestCase):
         ])
         prs = DiagramParser("testfiles/graph_txt/complex_labels.txt")
         self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
-
-
-class TestExtractLabel(unittest.TestCase):
-    def test_extract_label_basic(self):
-        test_str_basic: str = '{A}'
-        self.assertEquals(('{A}', 3), DiagramParser.extract_label(test_str_basic, 1))
-
-    def test_extract_label_repeat(self):
-        test_str_repeat: str = '{A}{B}'
-        self.assertEquals(('{A}', 3), DiagramParser.extract_label(test_str_repeat, 1))
-
-    def test_extract_label_brackets(self):
-        test_str_interior_brackets: str = '{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}'
-        self.assertEquals(('{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}', 33), DiagramParser.extract_label(test_str_interior_brackets, 1))
-
-    def test_extract_label_complex(self):
-        test_str_complex: str = '{[\\mathscal{A}^{\\op},X](-,-)}{H_{A}}'
-        self.assertEquals(('{[\\mathscal{A}^{\\op},X](-,-)}', 29), DiagramParser.extract_label(test_str_complex, 1))
-
-    def test_extract_label_empty(self):
-        test_str_empty: str = '{}{A}'
-        self.assertEquals(('{}', 2), DiagramParser.extract_label(test_str_empty, 1))
-
-    def test_extract_label_complex_file(self):
-        line1 = ["{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{"
-                 "A}}{1 \\times G}",
-                 "{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}{1 \\times G}",
-                 "{1 \\times G}"]
-        self.assertEquals("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}", DiagramParser.extract_label(line1[0], 1)[0])
-
-
-if __name__ == '__main__':
-    unittest.main()

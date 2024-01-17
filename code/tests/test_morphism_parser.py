@@ -4,6 +4,9 @@ import networkx as nx
 
 from src.morphism_parser import MorphismParser
 
+if __name__ == '__main__':
+    unittest.main()
+
 
 class TestParseLine(unittest.TestCase):
     def test_square(self):
@@ -250,7 +253,3 @@ class TestGenerateLabel(unittest.TestCase):
         self.assertEqual('ABBA', MorphismParser.generate_label(702, 4))
         self.assertEqual('ACAT', MorphismParser.generate_label(1371, 4))
         self.assertEqual('AAAAAAACAT', MorphismParser.generate_label(1371, 10))
-
-
-if __name__ == '__main__':
-    unittest.main()
