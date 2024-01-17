@@ -182,6 +182,7 @@ class TestProcessLine(unittest.TestCase):
         expected_graph = nx.DiGraph(expected_edges)
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
 
+
 class TestMorphismParser(unittest.TestCase):
     def test_fig8_long_first(self):
         parser = MorphismParser("testfiles/morphisms_txt/fig8_long_fst.txt")
@@ -227,6 +228,28 @@ class TestMorphismParser(unittest.TestCase):
         ])
 
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+
+class TestGenerateLabel(unittest.TestCase):
+
+    def test_small_nums(self):
+        self.assertEqual('A', MorphismParser.generate_label(0, 0))
+        self.assertEqual('N', MorphismParser.generate_label(13, 0))
+        self.assertEqual('Z', MorphismParser.generate_label(25, 0))
+
+    def test_large_label(self):
+        self.assertEqual('BA', MorphismParser.generate_label(26, 0))
+        self.assertEqual('CAT', MorphismParser.generate_label(1371, 0))
+        self.assertEqual('HELLO', MorphismParser.generate_label(3276872, 0))
+
+    def test_padding(self):
+        for i in range(1, 11):
+            self.assertEqual('A'*i, MorphismParser.generate_label(0, i))
+
+        self.assertEqual('ABA', MorphismParser.generate_label(26, 3))
+        self.assertEqual('ABBA', MorphismParser.generate_label(702, 4))
+        self.assertEqual('ACAT', MorphismParser.generate_label(1371, 4))
+        self.assertEqual('AAAAAAACAT', MorphismParser.generate_label(1371, 10))
 
 
 if __name__ == '__main__':

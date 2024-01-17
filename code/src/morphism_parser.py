@@ -82,6 +82,31 @@ class MorphismParser(Parser):
                 self.update_dicts(morph, prev_obj, codomain)
                 self.graph.add_edge(prev_obj, codomain, name=morph)
 
+    @staticmethod
+    def generate_label(node_index: int, min_num_chars: int) -> str:
+        """
+        Generates a label for a node based on its index. The label will be a string of capital letters representing a
+        base-26 number, where each letter represents the number corresponding to the position of the letter in the
+        English alphabet indexed from 0.
+
+        For example: A == 0, Z == 25, BA == 26. (where the numbers on the right are base 10).
+
+        If the number of characters needed to represent the string is less than ``min_num_chars`` then the returned
+        label will be padded with ``A``s on the left of the number. As ``A`` represents zero this is equivalent to
+        adding 0 to the left of the number, so AAAB = 0001.
+        :param node_index: the index of the node we want a label for
+        :param min_num_chars: the minimum number of characters we use to represent ``node_index``
+        :return: a string of capital letters representing ``node_index`` in base 26.
+        """
+        label = chr(ord('A') + (node_index % 26))
+
+        # using min_num_chars <= 1 instead of == 1 means we don't have to deal with cases where min_num_chars < 1,
+        # which shouldn't occur in use anyway, but also probably won't be a problem if they do.
+        if node_index < 26 and min_num_chars <= 1:
+            return label
+        else:
+            return MorphismParser.generate_label(node_index // 26, min_num_chars - 1) + label
+
     def update_dicts(self, morph, domain, codomain):
         self.morphs[morph] = (domain, codomain)
         if domain in self.morphs_by_domain.keys():
