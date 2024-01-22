@@ -1,3 +1,4 @@
+import math
 from typing import Any
 
 import networkx as nx
@@ -20,6 +21,7 @@ class MorphismParser(Parser):
             for line in file:
                 parsed_line = self.parse_line(line)
                 self.process_line(parsed_line)
+        self.rename_nodes()
 
     def process_line(self, line: list[list[str]]):
         if line == [[]]:
@@ -81,6 +83,13 @@ class MorphismParser(Parser):
             else:
                 self.update_dicts(morph, prev_obj, codomain)
                 self.graph.add_edge(prev_obj, codomain, name=morph)
+
+    def rename_nodes(self):
+        cur_nodes = list(self.graph.nodes)
+        num_nodes = len(cur_nodes)
+        num_chars = int(math.log(num_nodes, 26))
+        label_dict = {cur_nodes[i]: self.generate_label(i, num_chars) for i in range(num_nodes)}
+        nx.relabel_nodes(self.graph, label_dict, copy=False)
 
     @staticmethod
     def generate_label(node_index: int, min_num_chars: int) -> str:

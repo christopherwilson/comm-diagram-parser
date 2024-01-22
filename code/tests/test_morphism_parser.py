@@ -1,3 +1,4 @@
+import random
 import unittest
 
 import networkx as nx
@@ -247,9 +248,32 @@ class TestGenerateLabel(unittest.TestCase):
 
     def test_padding(self):
         for i in range(1, 11):
-            self.assertEqual('A'*i, MorphismParser.generate_label(0, i))
+            self.assertEqual('A' * i, MorphismParser.generate_label(0, i))
 
         self.assertEqual('ABA', MorphismParser.generate_label(26, 3))
         self.assertEqual('ABBA', MorphismParser.generate_label(702, 4))
         self.assertEqual('ACAT', MorphismParser.generate_label(1371, 4))
         self.assertEqual('AAAAAAACAT', MorphismParser.generate_label(1371, 10))
+
+
+class TestRelabel(unittest.TestCase):
+    def test_basic(self):
+        parser = MorphismParser("testfiles/blank.txt")
+        for n in random.sample(range(0, 1000000), 26):
+            parser.graph.add_node(n)
+        parser.rename_nodes()
+
+        expected_nodes = [chr(ord('A') + i) for i in range(26)]
+
+        self.assertEqual(list(parser.graph.nodes), expected_nodes)
+
+    def test_padded(self):
+        parser = MorphismParser("testfiles/blank.txt")
+        for n in random.sample(range(0, 1000000), 26**2):
+            parser.graph.add_node(n)
+        parser.rename_nodes()
+
+        alphabet = [chr(ord('A') + i) for i in range(26)]
+        expected_nodes = [c1 + c2 for c1 in alphabet for c2 in alphabet]
+
+        self.assertEqual(list(parser.graph.nodes), expected_nodes)
