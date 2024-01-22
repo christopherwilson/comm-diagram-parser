@@ -1,4 +1,4 @@
 {h}{f} = {i}{g}
-{m}{k}{h}{f} = {l}{j}{i}{g}
+{m}{k}{h}{f}
 {l}{j} = {m}{k}
 % https://q.uiver.app/#q=WzAsNyxbMCwwLCJBIl0sWzEsMCwiQiJdLFswLDEsIkQiXSxbMSwxLCJDIl0sWzIsMSwiRSJdLFsxLDIsIkciXSxbMiwyLCJGIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFsxLDMsImgiXSxbMiwzLCJpIiwyXSxbMyw0LCJqIl0sWzMsNSwiayIsMl0sWzQsNiwibCJdLFs1LDYsIm0iLDJdXQ==

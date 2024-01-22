@@ -87,6 +87,9 @@ class MorphismParser(Parser):
     def rename_nodes(self):
         cur_nodes = list(self.graph.nodes)
         num_nodes = len(cur_nodes)
+        # if the number of nodes == 0, then there is nothing to rename
+        if num_nodes == 0:
+            return
         num_chars = int(math.log(num_nodes, 26))
         label_dict = {cur_nodes[i]: self.generate_label(i, num_chars) for i in range(num_nodes)}
         nx.relabel_nodes(self.graph, label_dict, copy=False)

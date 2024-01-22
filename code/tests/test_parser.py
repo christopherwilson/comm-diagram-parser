@@ -1,5 +1,7 @@
 import unittest
 
+import networkx as nx
+
 from src.parser import Parser
 
 if __name__ == '__main__':
@@ -53,7 +55,8 @@ class TestExtractLabel(unittest.TestCase):
 
     def test_extract_label_brackets(self):
         test_str_interior_brackets: str = '{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}'
-        self.assertEquals(('{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}', 33), Parser.extract_label(test_str_interior_brackets, 1))
+        self.assertEquals(('{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}', 33),
+                          Parser.extract_label(test_str_interior_brackets, 1))
 
     def test_extract_label_complex(self):
         test_str_complex: str = '{[\\mathscal{A}^{\\op},X](-,-)}{H_{A}}'
@@ -69,3 +72,15 @@ class TestExtractLabel(unittest.TestCase):
                  "{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}{1 \\times G}",
                  "{1 \\times G}"]
         self.assertEquals("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}", Parser.extract_label(line1[0], 1)[0])
+
+
+class TestToLatex(unittest.TestCase):
+    def test_exfig(self):
+        parser = Parser()
+        parser.graph = nx.DiGraph([("A", "B", {"name": "f"}),
+                                   ("A", "C", {"name": "g"}),
+                                   ("B", "C", {"name": "h"}),
+                                   ("D", "B", {"name": "i"}),
+                                   ("D", "C", {"name": "j"})
+                                   ])
+        print(parser.to_latex())

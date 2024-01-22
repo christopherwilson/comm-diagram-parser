@@ -74,17 +74,23 @@ class Parser:
     #         i += 1
     #     return "\n".join(latex)
 
+    def to_latex(self, **kwargs):
+        self.position_nodes()
+        return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", **kwargs)
+
     def position_nodes(self):
         # TODO better algo
         num_cols = ceil(sqrt(len(self.graph.nodes)))
         x = 0
         y = 0
         for node in self.graph.nodes:
-            node["pos"] = (x, y)
+            self.graph.nodes[node]["pos"] = (x*2, y*2)
             x += 1
             if x == num_cols:
                 x = 0
                 y -= 1
+        for edge in self.graph.edges:
+            self.graph.edges[edge]["opt"] = "[auto]"
 
     def path_to_func_comp(self, path: list[tuple]):
         """
