@@ -1,9 +1,9 @@
-{A}{B}{f}
-{A}{D}{g}
-{B}{C}{h}
-{D}{C}{i}
-{C}{E}{j}
-{C}{G}{k}
-{E}{F}{l}
-{G}{F}{m}
+{f}{A}{B}
+{g}{A}{D}
+{h}{B}{C}
+{i}{D}{C}
+{j}{C}{E}
+{k}{C}{G}
+{l}{E}{F}
+{m}{G}{F}
 %https://q.uiver.app/#q=WzAsNyxbMCwwLCJBIl0sWzEsMCwiQiJdLFswLDEsIkQiXSxbMSwxLCJDIl0sWzIsMSwiRSJdLFsxLDIsIkciXSxbMiwyLCJGIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFsxLDMsImgiXSxbMiwzLCJpIiwyXSxbMyw0LCJqIl0sWzMsNSwiayIsMl0sWzQsNiwibCJdLFs1LDYsIm0iLDJdXQ==

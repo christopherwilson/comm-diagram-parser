@@ -1,6 +1,6 @@
-{A}{B}{f}
-{A}{C}{g}
-{B}{C}{h}
-{D}{B}{i}
-{D}{C}{j}
+{f}{A}{B}
+{g}{A}{C}
+{h}{B}{C}
+{i}{D}{B}
+{j}{D}{C}
 % https://q.uiver.app/#q=WzAsNCxbMCwwLCJBIl0sWzEsMCwiQiJdLFsxLDEsIkMiXSxbMiwwLCJEIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFsxLDIsImgiXSxbMywxLCJpIiwyXSxbMywyLCJqIl1d

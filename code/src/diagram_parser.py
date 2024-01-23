@@ -10,11 +10,11 @@ class DiagramParser(Parser):
         Each line of the commutative diagram representation should represent a function in the diagram, and be of
         the form::
 
-            {Domain}{Codomian}{Function}
+            {Function}{Domain}{Codomian}
 
         For example; the function ``f: A -> B`` should be represented by::
 
-            {A}{B}{f}
+            {f}{A}{B}
 
         ``Domain``, ``Codomain`` and ``Function`` cannot be the empty string, but they may contain \"{\" and \"}\".
         :param file_path: Location of the text representation of the commutative diagram.
@@ -43,4 +43,4 @@ class DiagramParser(Parser):
                         if num_labels >= 3:
                             break
                     # TODO: add error handling for unexpected characters
-                self.graph.add_edge(labels[0], labels[1], name=labels[2])
+                self.graph.add_edge(labels[1], labels[2], name=labels[0])
