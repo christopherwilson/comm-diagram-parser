@@ -74,9 +74,9 @@ class Parser:
     #         i += 1
     #     return "\n".join(latex)
 
-    def to_latex(self, **kwargs):
+    def to_latex(self):
         self.position_nodes()
-        return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", **kwargs)
+        return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", node_label="label")
 
     def position_nodes(self):
         # TODO better algo

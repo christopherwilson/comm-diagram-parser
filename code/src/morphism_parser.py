@@ -21,15 +21,14 @@ class MorphismParser(Parser):
             for line in file:
                 parsed_line = self.parse_line(line)
                 self.process_line(parsed_line)
-        self.rename_nodes()
 
     def process_line(self, line: list[list[str]]):
         if line == [[]]:
             return
         domain = self.counter
-        self.graph.add_node(domain)
+        self.graph.add_node(domain, label = "$\\bullet$")
         codomain = self.counter + 1
-        self.graph.add_node(codomain)
+        self.graph.add_node(codomain, label = "$\\bullet$")
         self.counter += 2
         for composed_morphs in line:
             if not composed_morphs:
@@ -62,6 +61,8 @@ class MorphismParser(Parser):
                         # if the next morph is known, set the codomain of this morph to be the domain of the next
                         morph_codomain = self.morphs[next_morph][0]
                         self.graph.add_edge(prev_obj, morph_codomain, name=morph)
+                        self.graph.nodes[prev_obj]['label'] = "$\\bullet$"
+                        self.graph.nodes[morph_codomain]['label'] = "$\\bullet$"
                         # filling in my dicts
                         self.update_dicts(morph, prev_obj, morph_codomain)
                         prev_obj = morph_codomain
@@ -69,6 +70,8 @@ class MorphismParser(Parser):
                     else:
                         self.update_dicts(morph, prev_obj, self.counter)
                         self.graph.add_edge(prev_obj, self.counter, name=morph)
+                        self.graph.nodes[prev_obj]['label'] = "$\\bullet$"
+                        self.graph.nodes[self.counter]['label'] = "$\\bullet$"
                         prev_obj = self.counter
                         self.counter += 1
             # dealing with the final morphism
@@ -83,6 +86,9 @@ class MorphismParser(Parser):
             else:
                 self.update_dicts(morph, prev_obj, codomain)
                 self.graph.add_edge(prev_obj, codomain, name=morph)
+                self.graph.nodes[prev_obj]['label'] = "$\\bullet$"
+                self.graph.nodes[codomain]['label'] = "$\\bullet$"
+
 
     def rename_nodes(self):
         cur_nodes = list(self.graph.nodes)

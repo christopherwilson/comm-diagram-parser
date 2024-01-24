@@ -44,3 +44,5 @@ class DiagramParser(Parser):
                             break
                     # TODO: add error handling for unexpected characters
                 self.graph.add_edge(labels[1], labels[2], name=labels[0])
+                self.graph.nodes[labels[1]]['label'] = labels[1]
+                self.graph.nodes[labels[2]]['label'] = labels[2]
