@@ -30,15 +30,13 @@ class DiagramParser(Parser):
                     raise Exception("Invalid number of labels")
                 num_labels = 0
                 labels[2] = ""  # clearing the maps name
-                j = 0
-                for i in range(len(line)):
-                    if i < j:
-                        continue
+                i = 0
+                while i < len(line):
                     c: str = line[i]  # iterate through each character
                     if c == "{":
                         if num_labels <= 3 and line[i + 1] == "}":
                             raise Exception("Object labels cannot be empty")
-                        labels[num_labels], j = self.extract_label(line, i + 1)
+                        labels[num_labels], i = self.extract_label(line, i + 1)
                         num_labels += 1
                         if num_labels >= 3:
                             break
