@@ -66,3 +66,19 @@ class TestTxtToGraph(unittest.TestCase):
         ])
         prs = DiagramParser("testfiles/graph_txt/complex_labels.txt")
         self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
+
+    def test_all_endomorphisms(self):
+        prs = DiagramParser("testfiles/graph_txt/exfig_all_endo.txt")
+        for node in prs.graph.nodes():
+            self.assertEquals(prs.graph.nodes[node]['label'], '{X}')
+
+    def test_some_endomorphisms(self):
+        prs = DiagramParser("testfiles/graph_txt/exfig_some_endo.txt")
+        expected_nodes_values = {
+            "{A}": "{X}",
+            "{B}": "{X}",
+            "{C}": "{C}",
+            "{D}": "{D}",
+        }
+        for node, label in expected_nodes_values.items():
+            self.assertEquals(prs.graph.nodes[node]['label'], label)

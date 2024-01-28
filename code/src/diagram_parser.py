@@ -21,26 +21,56 @@ class DiagramParser(Parser):
         """
         super().__init__()
         with open(file_path, 'r') as f:
-            labels = [""] * 3
-            num_labels = 3
+            line = f.readline()
+            self.labels: dict[str, str] = {}
+            self.seen_objs = set()
+            while line[0] == 'L':
+                self.parse_label_line(line)
+                line = f.readline()
+            self.parse_map_line(line)
             for line in f:
                 if line[0] == "%":  # lets us comment
                     continue
-                if num_labels < 3:
-                    raise Exception("Invalid number of labels")
-                num_labels = 0
-                labels[2] = ""  # clearing the maps name
-                i = 0
-                while i < len(line):
-                    c: str = line[i]  # iterate through each character
-                    if c == "{":
-                        if num_labels <= 3 and line[i + 1] == "}":
-                            raise Exception("Object labels cannot be empty")
-                        labels[num_labels], i = self.extract_label(line, i + 1)
-                        num_labels += 1
-                        if num_labels >= 3:
-                            break
-                    # TODO: add error handling for unexpected characters
-                self.graph.add_edge(labels[1], labels[2], name=labels[0])
-                self.graph.nodes[labels[1]]['label'] = labels[1]
-                self.graph.nodes[labels[2]]['label'] = labels[2]
+                self.parse_map_line(line)
+
+    def parse_map_line(self, line: str):
+        objs = [""] * 3
+        num_objs = 0
+        i = 0
+        while i < len(line):
+            c: str = line[i]  # iterate through each character
+            if c == "{":
+                if num_objs <= 3 and line[i + 1] == "}":
+                    raise Exception("Object labels cannot be empty")
+                obj, i = self.extract_label(line, i + 1)
+                objs[num_objs] = obj
+                num_objs += 1
+                # if obj is an object and not a map label
+                if num_objs > 1:
+                    self.add_node(obj)
+            if num_objs == 3:
+                break
+        self.graph.add_edge(objs[1], objs[2], name=objs[0])
+
+    def add_node(self, obj):
+        # applying labels to objects (if they aren't already in the graph)
+        if obj not in self.seen_objs:
+            # is there a label assigned to this object
+            if obj in self.labels:
+                label = self.labels[obj]
+            else:
+                label = obj
+            self.graph.add_node(obj, label=label)
+            self.seen_objs.add(obj)
+
+    def parse_label_line(self, line: str):
+        self.verify_char_is_open_bracket(1, line)
+        obj, i = self.extract_label(line, 2)
+        self.verify_char_is_open_bracket(i, line)
+        label, _ = self.extract_label(line, i + 1)
+        self.labels[obj] = label
+
+    @staticmethod
+    def verify_char_is_open_bracket(i, line):
+        if line[i] != "{":
+            raise Exception("Unexpected Character\n" + line + '-' * i + '^')
