@@ -9,34 +9,20 @@ if __name__ == '__main__':
     unittest.main()
 
 
-class TestParseLine(unittest.TestCase):
-    def test_square(self):
-        parser = MorphismParser("testfiles/blank.txt")
-        expected = [["{g}", "{f}"], ["{g'}", "{f'}"]]
-        result = parser.parse_line("{g}{f} = {g'}{f'}")
-        self.assertEqual(expected, result)
-
-    def test_comment(self):
-        parser = MorphismParser("testfiles/blank.txt")
-        expected = [["{g}", "{f}"], ["{g'}", "{f'}"]]
-        result = parser.parse_line("{g}{f} = {g'}{f'}%{h}")
-        self.assertEqual(expected, result)
-
-
-class TestUpdateDicts(unittest.TestCase):
+class TestAddEdge(unittest.TestCase):
     def test_adding_to_empty(self):
         parser = MorphismParser("testfiles/blank.txt")
         expected_morphs = {"{f}": (0, 1)}
         expected_morphs_by_domain = {0: ["{f}"]}
         expected_morphs_by_codomain = {1: ["{f}"]}
-        parser.update_dicts("{f}", 0, 1)
+        parser.add_edge("{f}", 0, 1)
         self.assertEqual(expected_morphs, parser.morphs)
         self.assertEqual(expected_morphs_by_domain, parser.morphs_by_domain)
         self.assertEqual(expected_morphs_by_codomain, parser.morphs_by_codomain)
 
     def test_adding_to_existing_func(self):
         parser = MorphismParser("testfiles/blank.txt")
-        parser.morphs = {"{f}": (2, 3), "{g}": (0, 2), "{h}": (3, 1)}
+        parser.morphs = {"{g}": (0, 2), "{h}": (3, 1)}
         parser.morphs_by_domain = {0: ["{g}"], 3: ["{h}"]}
         parser.morphs_by_codomain = {2: ["{g}"], 1: ["{h}"]}
 
@@ -44,7 +30,7 @@ class TestUpdateDicts(unittest.TestCase):
         expected_morphs_by_domain = {0: ["{g}", "{f}"], 3: ["{h}"]}
         expected_morphs_by_codomain = {1: ["{h}", "{f}"], 2: ["{g}"]}
 
-        parser.update_dicts("{f}", 0, 1)
+        parser.add_edge("{f}", 0, 1)
 
         self.assertEqual(expected_morphs, parser.morphs)
         self.assertEqual(expected_morphs_by_domain, parser.morphs_by_domain)
@@ -161,19 +147,19 @@ class TestContractDomain(unittest.TestCase):
                            expected_morphs_by_domain, parser)
 
 
-class TestProcessLine(unittest.TestCase):
+class TestParseLine(unittest.TestCase):
     def test_triangle(self):
-        line = [["{g}", "{f}"], ["{h}"]]
+        line = "{g}{f}={h}"
         parser = MorphismParser("testfiles/blank.txt")
-        parser.process_line(line)
+        parser.parse_line(line)
 
         expected_graph = nx.DiGraph([(0, 1), (1, 2), (0, 2)])
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
 
     def test_bubble(self):
-        line = [["{k}", "{h}", "{g}", "{f}"], ["{k}", "{h'}", "{g'}", "{f}"]]
+        line = "{k}{h}{g}{f}={k}{h'}{g'}{f}"
         parser = MorphismParser("testfiles/blank.txt")
-        parser.process_line(line)
+        parser.parse_line(line)
 
         expected_edges = [
             (0, 1),
@@ -202,6 +188,8 @@ class TestMorphismParser(unittest.TestCase):
         ])
 
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+        for node in parser.graph.nodes:
+            self.assertTrue(parser.graph.nodes[node]['label'], "$\\bullet$")
 
     def test_fig8_long_mid(self):
         parser = MorphismParser("testfiles/morphisms_txt/fig8_long_mid.txt")
@@ -233,47 +221,14 @@ class TestMorphismParser(unittest.TestCase):
 
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
 
+    def test_exfig(self):
+        parser = MorphismParser("testfiles/morphisms_txt/exfig.txt")
+        expected_graph = nx.DiGraph([
+            (0, 1),
+            (0, 2),
+            (1, 2),
+            (3, 1),
+            (3, 2)
+        ])
 
-class TestGenerateLabel(unittest.TestCase):
-
-    def test_small_nums(self):
-        self.assertEqual('A', MorphismParser.generate_label(0, 0))
-        self.assertEqual('N', MorphismParser.generate_label(13, 0))
-        self.assertEqual('Z', MorphismParser.generate_label(25, 0))
-
-    def test_large_label(self):
-        self.assertEqual('BA', MorphismParser.generate_label(26, 0))
-        self.assertEqual('CAT', MorphismParser.generate_label(1371, 0))
-        self.assertEqual('HELLO', MorphismParser.generate_label(3276872, 0))
-
-    def test_padding(self):
-        for i in range(1, 11):
-            self.assertEqual('A' * i, MorphismParser.generate_label(0, i))
-
-        self.assertEqual('ABA', MorphismParser.generate_label(26, 3))
-        self.assertEqual('ABBA', MorphismParser.generate_label(702, 4))
-        self.assertEqual('ACAT', MorphismParser.generate_label(1371, 4))
-        self.assertEqual('AAAAAAACAT', MorphismParser.generate_label(1371, 10))
-
-
-class TestRelabel(unittest.TestCase):
-    def test_basic(self):
-        parser = MorphismParser("testfiles/blank.txt")
-        for n in random.sample(range(0, 1000000), 26):
-            parser.graph.add_node(n)
-        parser.rename_nodes()
-
-        expected_nodes = [chr(ord('A') + i) for i in range(26)]
-
-        self.assertEqual(list(parser.graph.nodes), expected_nodes)
-
-    def test_padded(self):
-        parser = MorphismParser("testfiles/blank.txt")
-        for n in random.sample(range(0, 1000000), 26**2):
-            parser.graph.add_node(n)
-        parser.rename_nodes()
-
-        alphabet = [chr(ord('A') + i) for i in range(26)]
-        expected_nodes = [c1 + c2 for c1 in alphabet for c2 in alphabet]
-
-        self.assertEqual(list(parser.graph.nodes), expected_nodes)
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))

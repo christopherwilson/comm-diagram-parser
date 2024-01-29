@@ -11,136 +11,51 @@ class MorphismParser(Parser):
     morphs_by_domain: dict[int, list[str]]
     morphs_by_codomain: dict[int, list[str]]
 
-    def __init__(self, filepath):
+    def __init__(self, filepath: str):
+        """
+        Parses a file containing a representation of a list of morphisms.
+
+        Each line of the file should be of the form::
+
+            {function 1}{function 2}{function 3} = {function 4}{function 5}
+
+
+        :param filepath: the path to the file containing the representation
+        """
         super().__init__()
         self.counter = 0
-        self.morphs = {}
-        self.morphs_by_domain = {}
-        self.morphs_by_codomain = {}
+        self.morphs: dict[str, tuple[int, int]] = {}
+        self.morphs_by_domain: dict[str, list[str]] = {}
+        self.morphs_by_codomain: dict[str, list[str]] = {}
         with open(filepath, 'r') as file:
             for line in file:
-                parsed_line = self.parse_line(line)
-                self.process_line(parsed_line)
+                self.parse_line(line)
 
-    def process_line(self, line: list[list[str]]):
-        if line == [[]]:
-            return
-        domain = self.counter
-        self.graph.add_node(domain, label = "$\\bullet$")
-        codomain = self.counter + 1
-        self.graph.add_node(codomain, label = "$\\bullet$")
-        self.counter += 2
-        for composed_morphs in line:
-            if not composed_morphs:
-                continue
-            prev_obj = domain
-            for i in range(1, len(composed_morphs)):
-                # note we are traversing the array backwards
-                morph = composed_morphs[-i]
-                next_morph = composed_morphs[-(i + 1)]
-                # if current morphism is known
-                if morph in self.morphs.keys():
-                    # if this is the first morphism in the chain
-                    if i == 1 and self.morphs[morph][0] != domain:
-                        new_domain = self.morphs[morph][0]
-                        self.contract_objects(domain, new_domain)
-                        domain = new_domain
-                    if next_morph in self.morphs.keys():
-                        if self.morphs[morph][1] != self.morphs[next_morph][0]:
-                            new_next_domain = self.morphs[morph][1]
-                            old_next_domain = self.morphs[next_morph][0]
-                            self.contract_objects(old_next_domain, new_next_domain)
-                            prev_obj = new_next_domain
-                            continue
-                    else:
-                        prev_obj = self.morphs[morph][1]
-                        continue
-                # if this is a new morphism
-                else:
-                    if next_morph in self.morphs.keys():
-                        # if the next morph is known, set the codomain of this morph to be the domain of the next
-                        morph_codomain = self.morphs[next_morph][0]
-                        self.graph.add_edge(prev_obj, morph_codomain, name=morph)
-                        self.graph.nodes[prev_obj]['label'] = "$\\bullet$"
-                        self.graph.nodes[morph_codomain]['label'] = "$\\bullet$"
-                        # filling in my dicts
-                        self.update_dicts(morph, prev_obj, morph_codomain)
-                        prev_obj = morph_codomain
-                        continue
-                    else:
-                        self.update_dicts(morph, prev_obj, self.counter)
-                        self.graph.add_edge(prev_obj, self.counter, name=morph)
-                        self.graph.nodes[prev_obj]['label'] = "$\\bullet$"
-                        self.graph.nodes[self.counter]['label'] = "$\\bullet$"
-                        prev_obj = self.counter
-                        self.counter += 1
-            # dealing with the final morphism
-            morph = composed_morphs[0]
-            if morph in self.morphs.keys():
-                if self.morphs[morph][1] != codomain:
-                    new_codomain = self.morphs[morph][1]
-                    self.contract_objects(codomain, new_codomain)
-                    codomain = new_codomain
-                else:
-                    continue
+    def add_edge(self, morph, domain, codomain):
+        # dealing with graph
+        self.graph.add_edge(domain, codomain, label=morph)
+        self.graph.nodes[domain]['label'] = "$\\bullet$"
+        self.graph.nodes[codomain]['label'] = "$\\bullet$"
+
+        # dealing with dicts
+        # if morph in self.morphs it's in the relevant dicts, so don't bother adding it
+        if morph not in self.morphs:
+            # checking if I need to initialise the list of morphs or just add to it
+            if domain in self.morphs_by_domain:
+                self.morphs_by_domain[domain].append(morph)
             else:
-                self.update_dicts(morph, prev_obj, codomain)
-                self.graph.add_edge(prev_obj, codomain, name=morph)
-                self.graph.nodes[prev_obj]['label'] = "$\\bullet$"
-                self.graph.nodes[codomain]['label'] = "$\\bullet$"
+                self.morphs_by_domain[domain] = [morph]
+            if codomain in self.morphs_by_codomain:
+                self.morphs_by_codomain[codomain].append(morph)
+            else:
+                self.morphs_by_codomain[codomain] = [morph]
+            self.morphs[morph] = (domain, codomain)
 
-
-    def rename_nodes(self):
-        cur_nodes = list(self.graph.nodes)
-        num_nodes = len(cur_nodes)
-        # if the number of nodes == 0, then there is nothing to rename
-        if num_nodes == 0:
-            return
-        num_chars = int(math.log(num_nodes, 26))
-        label_dict = {cur_nodes[i]: self.generate_label(i, num_chars) for i in range(num_nodes)}
-        nx.relabel_nodes(self.graph, label_dict, copy=False)
-
-    @staticmethod
-    def generate_label(node_index: int, min_num_chars: int) -> str:
-        """
-        Generates a label for a node based on its index. The label will be a string of capital letters representing a
-        base-26 number, where each letter represents the number corresponding to the position of the letter in the
-        English alphabet indexed from 0.
-
-        For example: A == 0, Z == 25, BA == 26. (where the numbers on the right are base 10).
-
-        If the number of characters needed to represent the string is less than ``min_num_chars`` then the returned
-        label will be padded with ``A``s on the left of the number. As ``A`` represents zero this is equivalent to
-        adding 0 to the left of the number, so AAAB = 0001.
-        :param node_index: the index of the node we want a label for
-        :param min_num_chars: the minimum number of characters we use to represent ``node_index``
-        :return: a string of capital letters representing ``node_index`` in base 26.
-        """
-        label = chr(ord('A') + (node_index % 26))
-
-        # using min_num_chars <= 1 instead of == 1 means we don't have to deal with cases where min_num_chars < 1,
-        # which shouldn't occur in use anyway, but also probably won't be a problem if they do.
-        if node_index < 26 and min_num_chars <= 1:
-            return label
-        else:
-            return MorphismParser.generate_label(node_index // 26, min_num_chars - 1) + label
-
-    def update_dicts(self, morph, domain, codomain):
-        self.morphs[morph] = (domain, codomain)
-        if domain in self.morphs_by_domain.keys():
-            self.morphs_by_domain[domain].append(morph)
-        else:
-            self.morphs_by_domain[domain] = [morph]
-        if codomain in self.morphs_by_codomain.keys():
-            self.morphs_by_codomain[codomain].append(morph)
-        else:
-            self.morphs_by_codomain[codomain] = [morph]
-
-    def contract_objects(self, obj, new_obj):
+    def contract_objects(self, old_obj, new_obj):
         """
         Takes every morphism going into/out of ``obj``, and makes the morphism go into/out of ``new_obj``, then
         deletes ``obj``.
-        :param obj:
+        :param old_obj:
         :param new_obj:
         """
         # ensure we have a spot for the new_obj in lists
@@ -150,30 +65,60 @@ class MorphismParser(Parser):
             self.morphs_by_codomain[new_obj] = []
 
         # contract objects
-        nx.contracted_nodes(self.graph, new_obj, obj, copy=False)
-        if obj in self.morphs_by_domain.keys():
-            for adjusted_morph in self.morphs_by_domain.pop(obj):
+        nx.contracted_nodes(self.graph, new_obj, old_obj, copy=False)
+        self.graph.nodes[new_obj]['label'] = "$\\bullet$"
+        if old_obj in self.morphs_by_domain.keys():
+            for adjusted_morph in self.morphs_by_domain.pop(old_obj):
                 self.morphs_by_domain[new_obj].append(adjusted_morph)
                 prev_codomain = self.morphs[adjusted_morph][1]
                 self.morphs[adjusted_morph] = (new_obj, prev_codomain)
-        if obj in self.morphs_by_codomain.keys():
-            for adjusted_morph in self.morphs_by_codomain.pop(obj):
+        if old_obj in self.morphs_by_codomain.keys():
+            for adjusted_morph in self.morphs_by_codomain.pop(old_obj):
                 self.morphs_by_codomain[new_obj].append(adjusted_morph)
                 prev_domain = self.morphs[adjusted_morph][0]
                 self.morphs[adjusted_morph] = (prev_domain, new_obj)
 
     def parse_line(self, line: str):
         i = 0
-        parsed_line = [[]]
+        domain = self.counter
+        codomain = self.counter + 1
+        self.counter += 2
         while i < len(line):
             char = line[i]
-            if char == "%":
-                break
-            elif char == "{":
-                morph, i = super().extract_label(line, i + 1)
-                parsed_line[-1].append(morph)
-                continue
-            elif char == "=":
-                parsed_line.append([])
-            i += 1
-        return parsed_line
+            if char == "{":
+                i = self.parse_chain(line, i, domain, codomain)
+            else:
+                i += 1
+
+    def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int):
+        # TODO stop building these in the wrong direction
+        i = start_pos
+        prev_domain = codomain
+        prev_morph = ""
+        # if we encounter the end of the line or an = we know chain has ended
+        while i < len(line) and line[i] != "=":
+            if line[i] == "{":
+                prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain)
+            else:
+                i += 1
+        if prev_morph in self.morphs:
+            old_domain = self.morphs[prev_morph][0]
+            if old_domain != domain:
+                self.contract_objects(old_domain, domain)
+        return i
+
+    def process_morph(self, pos, line, prev_domain):
+        morph, pos = self.extract_label(line, pos + 1)
+        if morph in self.morphs:
+            curr_domain, morph_codomain = self.morphs[morph]
+            # if the domains already match we don't have a problem, if they don't we need to merge the nodes
+            if morph_codomain != prev_domain:
+                # IMPORTANT: we need to merge morph_codomain INTO prev_codomain, as this ensures the domain
+                #  of the composed morphism stays the same.
+                self.contract_objects(morph_codomain, prev_domain)
+        else:
+            # if we haven't seen the morphism before we need to assign it a codomain
+            curr_domain = self.counter
+            self.counter += 1
+        self.add_edge(morph, curr_domain, prev_domain)
+        return curr_domain, pos, morph

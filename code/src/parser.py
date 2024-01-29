@@ -128,3 +128,14 @@ class Parser:
                     funcs.append(self.path_to_func_comp(path))
                 eqs.append(" = ".join(funcs))
         return "\n".join(eqs)
+
+    @staticmethod
+    def verify_char_is_open_bracket(i, line):
+        """
+        Checks that the character at position i in the line is "{", raises an error if it is not
+        :param i: the index of the character to be checked
+        :param line: the line to be checked
+        :return:
+        """
+        if line[i] != "{":
+            raise Exception("Unexpected Character\n" + line + '-' * i + '^')
