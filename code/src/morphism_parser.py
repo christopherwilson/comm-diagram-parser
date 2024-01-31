@@ -1,4 +1,3 @@
-import math
 from typing import Any
 
 import networkx as nx
@@ -33,7 +32,7 @@ class MorphismParser(Parser):
 
     def add_edge(self, morph, domain, codomain):
         # dealing with graph
-        self.graph.add_edge(domain, codomain, label=morph)
+        self.graph.add_edge(domain, codomain, name=morph)
         self.graph.nodes[domain]['label'] = "$\\bullet$"
         self.graph.nodes[codomain]['label'] = "$\\bullet$"
 
@@ -91,7 +90,6 @@ class MorphismParser(Parser):
                 i += 1
 
     def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int):
-        # TODO stop building these in the wrong direction
         i = start_pos
         prev_domain = codomain
         prev_morph = ""

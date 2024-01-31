@@ -84,3 +84,47 @@ class TestToLatex(unittest.TestCase):
                                    ("D", "C", {"name": "j"})
                                    ])
         print(parser.to_latex())
+
+
+class TestToDiagramRepresentation(unittest.TestCase):
+    def test_exfig(self):
+        parser = Parser()
+        parser.graph = nx.DiGraph([("A", "B", {"name": "f"}),
+                                   ("A", "C", {"name": "g"}),
+                                   ("B", "C", {"name": "h"}),
+                                   ("D", "B", {"name": "i"}),
+                                   ("D", "C", {"name": "j"})
+                                   ])
+        for node in parser.graph:
+            parser.graph.nodes[node]["label"] = node
+
+        lines = []
+        with open("testfiles/graph_txt/exfig.txt", "r") as f:
+            for line in f:
+                if line[0] == "%":
+                    break
+                lines.append(line)
+        expected_output = "".join(lines)
+
+        self.assertEquals(parser.to_diagram_representation() + "\n", expected_output)
+
+    def test_exfig_endos(self):
+        parser = Parser()
+        parser.graph = nx.DiGraph([("A", "B", {"name": "f"}),
+                                   ("A", "C", {"name": "g"}),
+                                   ("B", "C", {"name": "h"}),
+                                   ("D", "B", {"name": "i"}),
+                                   ("D", "C", {"name": "j"})
+                                   ])
+        for node in parser.graph:
+            parser.graph.nodes[node]["label"] = "X"
+
+        lines = []
+        with open("testfiles/graph_txt/exfig_all_endo.txt", "r") as f:
+            for line in f:
+                if line[0] == "%":
+                    break
+                lines.append(line)
+        expected_output = "".join(lines)
+
+        self.assertEquals(parser.to_diagram_representation(), expected_output)

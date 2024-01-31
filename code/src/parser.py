@@ -62,18 +62,6 @@ class Parser:
                 line += 1
         return ob_matrix
 
-    # def to_codi(self) -> str:
-    #     node_matrix = self.place_nodes()
-    #     num_latex_lines = 1 + len(self.graph.edges)
-    #     latex = [""] * num_latex_lines  # each element is a line in LaTeX
-    #     latex_matrix = self.lists_to_latex_matrix(node_matrix)
-    #     latex[0] = "\\obj {" + latex_matrix + "};"
-    #     i = 1
-    #     for edge in self.graph.edges.data():
-    #         latex[i] = f"\\mor {edge[0]} %s:-> {edge[1]};" % edge[2]["name"]
-    #         i += 1
-    #     return "\n".join(latex)
-
     def to_latex(self):
         self.position_nodes()
         return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", node_label="label")
@@ -84,7 +72,7 @@ class Parser:
         x = 0
         y = 0
         for node in self.graph.nodes:
-            self.graph.nodes[node]["pos"] = (x*2, y*2)
+            self.graph.nodes[node]["pos"] = (x * 2, y * 2)
             x += 1
             if x == num_cols:
                 x = 0
@@ -139,3 +127,20 @@ class Parser:
         """
         if line[i] != "{":
             raise Exception("Unexpected Character\n" + line + '-' * i + '^')
+
+    def to_diagram_representation(self) -> str:
+        label_lines = []
+        morph_lines = []
+        seen_objs = set()
+        for edge in self.graph.edges():
+            for obj in edge:
+                if obj not in seen_objs:
+                    seen_objs.add(obj)
+                    if self.graph.nodes[obj]["label"] != obj:
+                        label = self.graph.nodes[obj]["label"]
+                        label_lines.append("L{" + str(obj) + "}{" + str(label) + "}")
+
+            name = self.graph[edge[0]][edge[1]]['name']
+            morph_lines.append("{" + str(name) + "}{" + edge[0] + "}{" + edge[1] + "}")
+
+        return "\n".join(label_lines + morph_lines)
