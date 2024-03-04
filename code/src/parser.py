@@ -1,11 +1,15 @@
 from math import ceil, sqrt
-from typing import Any
+from typing import Any, Set
+from collections import deque
 
 import networkx as nx
 
 
 class Parser:
     def __init__(self):
+        self.unvisited_nodes = set()
+        self.comp_func_chains: dict[Any, dict[Any, list[list[Any]]]] = {}
+        self.links: list[list[Any]] = []
         self.graph: nx.DiGraph = nx.DiGraph()
 
     def get_graph(self) -> nx.DiGraph:
@@ -93,29 +97,85 @@ class Parser:
             i += 1
         return "".join(funcs)
 
-    def to_func_comps(self) -> str:
+    # noinspection PyCallingNonCallable
+    def to_morphism_representation(self) -> str:
         """
         :return: a representation of the composed functions that are equal to each other
         """
-        # The do
-        # noinspection PyCallingNonCallable
-        domains = [node for node in self.graph.nodes if self.graph.out_degree(node) > 1]
-        # noinspection PyCallingNonCallable
-        codomains = [node for node in self.graph.nodes if self.graph.in_degree(node) > 1]
+        domains = []
+        codomains = set()
+        # preparing nodes
+        for node in self.graph.nodes:
+            self.graph.nodes[node]['visited_from']: set = set()
+            self.unvisited_nodes.add(node)
+            in_degree = self.graph.in_degree(node)
+            out_degree = self.graph.out_degree(node)
+            if out_degree > 1:
+                domains.append((in_degree, node))
+            if in_degree > 1:
+                codomains.add(node)
+        domains = sorted(domains)
+        for _, node in domains:
+            if node in self.unvisited_nodes:
+                self.search_for_eq_comp_morphs(node, [], [])
 
-        eqs = []
-        for domain in domains:
-            for codomain in codomains:
-                funcs = []
-                paths: list[list[tuple]] = list(nx.algorithms.all_simple_edge_paths(self.graph, domain, codomain))
-                if len(paths) <= 1:
-                    continue
-                for path in paths:
-                    if not path:
-                        continue
-                    funcs.append(self.path_to_func_comp(path))
-                eqs.append(" = ".join(funcs))
-        return "\n".join(eqs)
+    def search_for_eq_comp_morphs(self, curr_node: Any, path: list[Any], prev_domains: list[tuple[Any, int]],
+                                  prev_codomains: set[tuple[Any, int]]):
+        node_pos = len(path)
+        path.append(curr_node)
+        self.unvisited_nodes.remove(curr_node)
+        is_domain = self.graph.out_degree[curr_node] > 1
+        is_codomain = self.graph.in_degree[curr_node] > 1
+
+        if is_codomain:
+            self.graph.nodes[curr_node]['codomain_children']: dict[Any, list[Any]] = {}
+            for domain, domain_pos in prev_domains:
+                self.store_chain(domain, curr_node, path[domain_pos:])
+            for codomain, codomain_pos in prev_codomains:
+                self.graph.nodes[codomain]['codomain_children'][curr_node] = path[codomain_pos:]
+            prev_codomains = prev_codomains.copy()
+            prev_codomains.add((curr_node, node_pos))
+
+        if is_domain:
+            prev_domains.append((curr_node, node_pos))
+
+        for adj_node in self.graph.adj[curr_node]:
+            if adj_node in self.unvisited_nodes:
+                branch_path = path.copy()
+                self.search_for_eq_comp_morphs(adj_node, branch_path, prev_domains.copy(), prev_codomains)
+
+            else:
+                for i in range(len(prev_domains)-1, -1, -1):
+                    prev_domain = prev_domains[i][0]
+                    found_existing_path = (prev_domain in self.comp_func_chains
+                                           and adj_node in self.comp_func_chains[prev_domain])
+                    prev_domain_pos = prev_domains[i][1]
+                    path_to = path[prev_domain_pos:]
+                    path_to.append(adj_node)
+                    self.store_chain(prev_domain, adj_node, path_to)
+                    if found_existing_path:
+                        break
+
+                if "codomain_children" not in self.graph.nodes[curr_node]:
+                    print(curr_node)
+                    self.graph.nodes[curr_node]['codomain_children'] = {}
+
+                for codomain in self.graph.nodes[adj_node]['codomain_children']:
+                    if codomain not in self.graph.nodes[curr_node]['codomain_children']:
+                        future_path = self.graph.nodes[adj_node]['codomain_children'][codomain]
+                        new_path = [curr_node] + future_path
+                        self.store_chain(curr_node, codomain, new_path)
+                        self.graph.nodes[curr_node]['codomain_children'][codomain] = new_path
+
+    def store_chain(self, domain, codomain, path):
+        if domain in self.comp_func_chains.keys():
+            domain_dict = self.comp_func_chains[domain]
+            if codomain in domain_dict.keys():
+                domain_dict[codomain].append(path)
+            else:
+                domain_dict[codomain] = [path]
+        else:
+            self.comp_func_chains[domain] = {codomain: [path]}
 
     @staticmethod
     def verify_char_is_open_bracket(i, line):

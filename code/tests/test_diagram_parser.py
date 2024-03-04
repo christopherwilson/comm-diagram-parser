@@ -13,11 +13,11 @@ class TestDiagTextToFuncComp(unittest.TestCase):
         prs = DiagramParser("testfiles/graph_txt/exfig.txt")
         expected = ("{h}{f} = {g}\n"
                     "{h}{i} = {j}")
-        self.assertEquals(prs.to_func_comps(), expected)
+        self.assertEquals(prs.to_morphism_representation(), expected)
 
     def test_rectangle(self):
         prs = DiagramParser("testfiles/graph_txt/rectangle.txt")
-        func_comps = prs.to_func_comps()
+        func_comps = prs.to_morphism_representation()
         print(func_comps)
         self.assertEquals(func_comps.count("\n"), 2)
 
