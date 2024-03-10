@@ -8,7 +8,7 @@ import networkx as nx
 class Parser:
     def __init__(self):
         self.unvisited_nodes = set()
-        self.comp_func_chains: dict[Any, dict[Any, list[list[Any]]]] = {}
+        self.comp_morph_chains: dict[Any, dict[Any, list[list[Any]]]] = {}
         self.links: list[list[Any]] = []
         self.graph: nx.DiGraph = nx.DiGraph()
 
@@ -119,8 +119,8 @@ class Parser:
             if node in self.unvisited_nodes:
                 self.search_for_eq_comp_morphs(node, [], [])
 
-    def search_for_eq_comp_morphs(self, curr_node: Any, path: list[Any], prev_domains: list[tuple[Any, int]],
-                                  prev_codomains: set[tuple[Any, int]]):
+    def search_for_eq_comp_morphs(self, curr_node: Any, path: list[Any] = [], prev_domains: list[tuple[Any, int]] = [],
+                                  prev_codomains: set[tuple[Any, int]] = []):
         node_pos = len(path)
         path.append(curr_node)
         self.unvisited_nodes.remove(curr_node)
@@ -147,8 +147,8 @@ class Parser:
             else:
                 for i in range(len(prev_domains)-1, -1, -1):
                     prev_domain = prev_domains[i][0]
-                    found_existing_path = (prev_domain in self.comp_func_chains
-                                           and adj_node in self.comp_func_chains[prev_domain])
+                    found_existing_path = (prev_domain in self.comp_morph_chains
+                                           and adj_node in self.comp_morph_chains[prev_domain])
                     prev_domain_pos = prev_domains[i][1]
                     path_to = path[prev_domain_pos:]
                     path_to.append(adj_node)
@@ -168,14 +168,14 @@ class Parser:
                         self.graph.nodes[curr_node]['codomain_children'][codomain] = new_path
 
     def store_chain(self, domain, codomain, path):
-        if domain in self.comp_func_chains.keys():
-            domain_dict = self.comp_func_chains[domain]
+        if domain in self.comp_morph_chains.keys():
+            domain_dict = self.comp_morph_chains[domain]
             if codomain in domain_dict.keys():
                 domain_dict[codomain].append(path)
             else:
                 domain_dict[codomain] = [path]
         else:
-            self.comp_func_chains[domain] = {codomain: [path]}
+            self.comp_morph_chains[domain] = {codomain: [path]}
 
     @staticmethod
     def verify_char_is_open_bracket(i, line):
