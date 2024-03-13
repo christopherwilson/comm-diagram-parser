@@ -117,10 +117,31 @@ class Parser:
         domains = sorted(domains)
         for _, node in domains:
             if node in self.unvisited_nodes:
-                self.search_for_eq_comp_morphs(node, [], [])
+                self.search_for_eq_comp_morphs(node, [], [], set())
 
-    def search_for_eq_comp_morphs(self, curr_node: Any, path: list[Any] = [], prev_domains: list[tuple[Any, int]] = [],
-                                  prev_codomains: set[tuple[Any, int]] = []):
+        return self.convert_comp_morphs()
+
+    def convert_comp_morphs(self) -> str:
+        data = []
+        for start_node in self.comp_morph_chains:
+            for end_node in self.comp_morph_chains[start_node]:
+                line = []
+                composed_morphs = self.comp_morph_chains[start_node][end_node]
+                if len(composed_morphs) > 1:
+                    for composed_morph in composed_morphs:
+                        # traversing array backwards
+                        str_composed_morph = ""
+                        for i in range(-1, -len(composed_morph), -1):
+                            domain = composed_morph[i - 1]
+                            codomain = composed_morph[i]
+                            morphism = self.graph.edges[domain, codomain]['name']
+                            str_composed_morph += morphism
+                        line.append(str_composed_morph)
+                data.append(" = ".join(line))
+        return "\n".join(data)
+
+    def search_for_eq_comp_morphs(self, curr_node: Any, path: list[Any], prev_domains: list[tuple[Any, int]],
+                                  prev_codomains: set[tuple[Any, int]]):
         node_pos = len(path)
         path.append(curr_node)
         self.unvisited_nodes.remove(curr_node)
@@ -145,7 +166,7 @@ class Parser:
                 self.search_for_eq_comp_morphs(adj_node, branch_path, prev_domains.copy(), prev_codomains)
 
             else:
-                for i in range(len(prev_domains)-1, -1, -1):
+                for i in range(len(prev_domains) - 1, -1, -1):
                     prev_domain = prev_domains[i][0]
                     found_existing_path = (prev_domain in self.comp_morph_chains
                                            and adj_node in self.comp_morph_chains[prev_domain])
@@ -157,7 +178,6 @@ class Parser:
                         break
 
                 if "codomain_children" not in self.graph.nodes[curr_node]:
-                    print(curr_node)
                     self.graph.nodes[curr_node]['codomain_children'] = {}
 
                 for codomain in self.graph.nodes[adj_node]['codomain_children']:

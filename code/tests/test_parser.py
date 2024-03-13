@@ -5,6 +5,18 @@ import networkx as nx
 
 from src.parser import Parser
 
+STAGGERED = nx.DiGraph([(0, 1), (1, 3), (3, 4), (0, 2), (2, 3), (1, 5), (5, 4)])
+
+LIMIT_DEF = nx.DiGraph([(0, 1), (0, 2), (0, 3), (1, 2), (1, 3)])
+
+BRIDGE = nx.DiGraph([(0, 1), (1, 2), (0, 3), (3, 5), (3, 4), (4, 5), (5, 2)])
+
+DOUBLY_STAGGERED = nx.DiGraph([(0, 1), (1, 3), (3, 4), (0, 2), (2, 3), (1, 5), (5, 4), (4, 7), (3, 6), (6, 7)])
+
+INTRO_EXFIG = nx.DiGraph([(0, 1), (1, 2), (0, 3), (3, 2), (0, 4), (4, 1), (1, 5), (5, 2), (6, 4), (6, 5)])
+
+BIG_CYCLE_TRIANGLES = nx.DiGraph([(1, 2), (2, 3), (0, 1), (0, 2), (0, 3)])
+
 if __name__ == '__main__':
     unittest.main()
 
@@ -145,6 +157,9 @@ class TestToMorphisms(unittest.TestCase):
             (6, 7, {"name": "{m}"}),
             (7, 4, {"name": "{n}"})
         ])
+
+        print(parser.to_morphism_representation())
+        # TODO fix this test
         pattern = re.compile(
             r"\A({h}{g} ?= ?{k}{j}\n{i}({h}{g}|{k}{j}){f} ?= ?{n}{m}{l}|{i}({h}{g}|{k}{j}){f} ?= ?{n}{m}{l}\n{h}{g} ?= ?{k}{j})\Z")
         self.assertRegex(parser.to_morphism_representation(), pattern)
@@ -175,15 +190,7 @@ class TestSearchForEquivCompMorphs(unittest.TestCase):
         return True
 
     def test_staggered_diag(self):
-        graph = nx.DiGraph([
-            (0, 1),
-            (1, 3),
-            (3, 4),
-            (0, 2),
-            (2, 3),
-            (1, 5),
-            (5, 4)
-        ])
+        graph = STAGGERED
 
         expected_dict = {
             0: {3: [[0, 1, 3],
@@ -200,17 +207,11 @@ class TestSearchForEquivCompMorphs(unittest.TestCase):
         prsr.unvisited_nodes = set(prsr.graph.nodes)
         prsr.search_for_eq_comp_morphs(0, [], [], set())
 
-        print(prsr.comp_func_chains)
-        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_func_chains))
+        print(prsr.comp_morph_chains)
+        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
 
     def test_limit_diag(self):
-        graph = nx.DiGraph([
-            (0, 1),
-            (0, 2),
-            (0, 3),
-            (1, 2),
-            (1, 3),
-        ])
+        graph = LIMIT_DEF
 
         expected_dict = {
             0: {2: [[0, 1, 2], [0, 2]],
@@ -224,18 +225,10 @@ class TestSearchForEquivCompMorphs(unittest.TestCase):
         prsr.unvisited_nodes = set(prsr.graph.nodes)
         prsr.search_for_eq_comp_morphs(0, [], [], set())
 
-        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_func_chains))
+        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
 
     def test_bridges(self):
-        graph = nx.DiGraph([
-            (0, 1),
-            (1, 2),
-            (0, 3),
-            (3, 5),
-            (3, 4),
-            (4, 5),
-            (5, 2)
-        ])
+        graph = BRIDGE
 
         expected_dict = {
             0: {5: [[0, 3, 5]],
@@ -249,22 +242,11 @@ class TestSearchForEquivCompMorphs(unittest.TestCase):
         prsr.unvisited_nodes = set(prsr.graph.nodes)
         prsr.search_for_eq_comp_morphs(0, [], [], set())
 
-        print(prsr.comp_func_chains)
-        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_func_chains))
+        print(prsr.comp_morph_chains)
+        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
 
     def test_doubly_staggered_diag(self):
-        graph = nx.DiGraph([
-            (0, 1),
-            (1, 3),
-            (3, 4),
-            (0, 2),
-            (2, 3),
-            (1, 5),
-            (5, 4),
-            (4, 7),
-            (3, 6),
-            (6, 7)
-        ])
+        graph = DOUBLY_STAGGERED
 
         expected_dict = {
             0: {3: [[0, 1, 3],
@@ -287,22 +269,11 @@ class TestSearchForEquivCompMorphs(unittest.TestCase):
         prsr.unvisited_nodes = set(prsr.graph.nodes)
         prsr.search_for_eq_comp_morphs(0, [], [], set())
 
-        print(prsr.comp_func_chains)
-        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_func_chains))
+        print(prsr.comp_morph_chains)
+        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
 
     def test_complicated_graph(self):
-        graph = nx.DiGraph([
-            (0, 1),
-            (1, 2),
-            (0, 3),
-            (3, 2),
-            (0, 4),
-            (4, 1),
-            (1, 5),
-            (5, 2),
-            (6, 4),
-            (6, 5)
-        ])
+        graph = INTRO_EXFIG
 
         expected_dict = {}
 
@@ -312,5 +283,19 @@ class TestSearchForEquivCompMorphs(unittest.TestCase):
         prsr.search_for_eq_comp_morphs(0, [], [], set())
         prsr.search_for_eq_comp_morphs(6, [], [], set())
 
-        print(prsr.comp_func_chains)
-        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_func_chains))
+        print(prsr.comp_morph_chains)
+        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
+
+    def test_two_domains(self):
+        graph = BIG_CYCLE_TRIANGLES
+
+        expected_dict = {}
+
+        prsr = Parser()
+        prsr.graph = graph
+        prsr.unvisited_nodes = set(prsr.graph.nodes)
+        prsr.search_for_eq_comp_morphs(0, [], [], set())
+        #prsr.search_for_eq_comp_morphs(4, [], [], set())
+
+        print(prsr.comp_morph_chains)
+        self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))

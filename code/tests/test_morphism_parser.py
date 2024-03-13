@@ -170,7 +170,12 @@ class TestParseLine(unittest.TestCase):
             (5, 3)
         ]
         expected_graph = nx.DiGraph(expected_edges)
+        print(parser.to_latex())
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_complex_exfig(self):
+        parser = MorphismParser("testfiles/morphisms_txt/complicated_ex_fig")
+        print(parser.to_latex())
 
 
 class TestMorphismParser(unittest.TestCase):
