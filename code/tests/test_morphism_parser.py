@@ -237,3 +237,81 @@ class TestMorphismParser(unittest.TestCase):
         ])
 
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_cycle(self):
+        parser = MorphismParser("testfiles/morphisms_txt/cycle.txt")
+        expected_graph = nx.DiGraph([
+            (0, 1),
+            (1, 2),
+            (2, 0)
+        ])
+
+        print(list(parser.graph.edges))
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_inverse_cycle(self):
+        parser = MorphismParser("testfiles/morphisms_txt/inverse_cycle.txt")
+        expected_graph = nx.DiGraph([
+            (0, 1),
+            (1, 2),
+            (2, 0)
+        ])
+
+        print(list(parser.graph.edges))
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_wedge(self):
+        parser = MorphismParser("testfiles/morphisms_txt/wedge.txt")
+        expected_graph = nx.DiGraph([
+            (0, 1),
+            (0, 2),
+            (2, 1),
+            (2, 3),
+            (3, 0)
+        ])
+
+        print(list(parser.graph.edges))
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_wedge2(self):
+        parser = MorphismParser("testfiles/morphisms_txt/wedge2.txt")
+        expected_graph = nx.DiGraph([
+            (0, 1),
+            (0, 2),
+            (2, 1),
+            (2, 3),
+            (3, 0)
+        ])
+
+        print(list(parser.graph.edges))
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_speech_bubble(self):
+        parser = MorphismParser("testfiles/morphisms_txt/speech_bubble.txt")
+        expected_graph = nx.DiGraph([
+            (0, 3),
+            (1, 0),
+            (3, 2),
+            (4, 2),
+            (4, 3),
+            (4, 5),
+            (1, 5)
+        ])
+
+        print(list(parser.graph.edges))
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
+
+    def test_speech_bubble2(self):
+        parser = MorphismParser("testfiles/morphisms_txt/speech_bubble2.txt")
+        expected_graph = nx.DiGraph([
+            (0, 3),
+            (1, 0),
+            (3, 2),
+            (4, 2),
+            (4, 3),
+            (4, 5),
+            (1, 5)
+        ])
+
+        print(list(parser.graph.edges))
+        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))

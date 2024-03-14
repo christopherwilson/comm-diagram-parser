@@ -1,0 +1,3 @@
+{i}-{f}{l}{k} = {j}
+{g}{f} = {h}
+% https://q.uiver.app/#q=WzAsNixbMCwxLCJcXGJ1bGxldCJdLFswLDIsIlxcYnVsbGV0Il0sWzEsMiwiXFxidWxsZXQiXSxbMiwxLCJcXGJ1bGxldCJdLFsyLDAsIlxcYnVsbGV0Il0sWzEsMCwiXFxidWxsZXQiXSxbMCwxLCJoIiwyXSxbMiwxLCJnIl0sWzAsMiwiZiJdLFszLDIsImwiLDJdLFs0LDMsImsiLDJdLFs0LDUsImoiXSxbMCw1LCJpIiwyXV0=

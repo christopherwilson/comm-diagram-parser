@@ -82,33 +82,51 @@ class MorphismParser(Parser):
         domain = self.counter
         codomain = self.counter + 1
         self.counter += 2
+        is_inverse = False
         while i < len(line):
             char = line[i]
+            if char == "%":
+                break
+            if char == "-":
+                is_inverse = True
             if char == "{":
-                i = self.parse_chain(line, i, domain, codomain)
+                i = self.parse_chain(line, i, domain, codomain, is_inverse)
+                is_inverse = False
             else:
                 i += 1
 
-    def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int):
+    def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int, is_inverse: bool = False):
         i = start_pos
         prev_domain = codomain
         prev_morph = ""
+        is_prev_inverse = False
         # if we encounter the end of the line or an = we know chain has ended
         while i < len(line) and line[i] != "=":
+            if line[i] == "-":
+                is_inverse = True
+                i += 1
             if line[i] == "{":
-                prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain)
+                prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain, is_inverse)
+                is_prev_inverse = is_inverse
+                is_inverse = False
             else:
                 i += 1
         if prev_morph in self.morphs:
-            old_domain = self.morphs[prev_morph][0]
+            if is_prev_inverse:
+                old_domain = self.morphs[prev_morph][1]
+            else:
+                old_domain = self.morphs[prev_morph][0]
             if old_domain != domain:
                 self.contract_objects(old_domain, domain)
         return i
 
-    def process_morph(self, pos, line, prev_domain):
+    def process_morph(self, pos, line, prev_domain, is_inverse: bool = False):
         morph, pos = self.extract_label(line, pos + 1)
         if morph in self.morphs:
-            curr_domain, morph_codomain = self.morphs[morph]
+            if is_inverse:
+                morph_codomain, curr_domain = self.morphs[morph]
+            else:
+                curr_domain, morph_codomain = self.morphs[morph]
             # if the domains already match we don't have a problem, if they don't we need to merge the nodes
             if morph_codomain != prev_domain:
                 # IMPORTANT: we need to merge morph_codomain INTO prev_codomain, as this ensures the domain
@@ -118,5 +136,8 @@ class MorphismParser(Parser):
             # if we haven't seen the morphism before we need to assign it a codomain
             curr_domain = self.counter
             self.counter += 1
-        self.add_edge(morph, curr_domain, prev_domain)
+        if is_inverse:
+            self.add_edge(morph, prev_domain, curr_domain)
+        else:
+            self.add_edge(morph, curr_domain, prev_domain)
         return curr_domain, pos, morph

@@ -82,7 +82,8 @@ BIG_CYCLE_TRIANGLES = nx.DiGraph([
     (2, 3, {"name": "{j}"})
 ])
 
-CONE = nx.DiGraph([
+# https://q.uiver.app/#q=WzAsNyxbMSwwLCIwIl0sWzAsMSwiMSJdLFswLDIsIjIiXSxbMSwxLCIzIl0sWzEsMywiNCJdLFsyLDEsIjUiXSxbMiwyLCI2Il0sWzEsMiwiZyIsMl0sWzIsMywiaCIsMl0sWzIsNCwiaSIsMl0sWzAsNSwiaiJdLFs1LDYsImsiXSxbNiwzLCJsIl0sWzYsNCwibSJdLFswLDEsImYiLDJdXQ==
+BULKY_DIAMOND = nx.DiGraph([
     (0, 1, {"name": "{f}"}),
     (1, 2, {"name": "{g}"}),
     (2, 3, {"name": "{h}"}),
@@ -256,9 +257,9 @@ class TestToMorphisms(unittest.TestCase):
         parser.graph = LIMIT_DEF
         print(parser.to_morphism_representation())
 
-    def test_cone(self):
+    def test_bulky_diamond(self):
         parser = Parser()
-        parser.graph = CONE
+        parser.graph = BULKY_DIAMOND
         print(parser.to_morphism_representation())
 
 
