@@ -9,6 +9,7 @@ class Parser:
     def __init__(self):
         self.unvisited_nodes = set()
         self.comp_morph_chains: dict[Any, dict[Any, list[list[Any]]]] = {}
+        self.comp_morph_eqs: dict[tuple[Any, Any], list[str]] = {}
         self.links: list[list[Any]] = []
         self.graph: nx.DiGraph = nx.DiGraph()
 
@@ -98,7 +99,7 @@ class Parser:
         return "".join(funcs)
 
     # noinspection PyCallingNonCallable
-    def to_morphism_representation(self) -> str:
+    def old_to_morphism_representation(self) -> str:
         """
         :return: a representation of the composed functions that are equal to each other
         """
@@ -151,7 +152,7 @@ class Parser:
         if is_codomain:
             self.graph.nodes[curr_node]['codomain_children']: dict[Any, list[Any]] = {}
             for domain, domain_pos in prev_domains:
-                self.store_chain(domain, curr_node, path[domain_pos:])
+                self.store_path(domain, curr_node, path[domain_pos:])
             for codomain, codomain_pos in prev_codomains:
                 self.graph.nodes[codomain]['codomain_children'][curr_node] = path[codomain_pos:]
             prev_codomains = prev_codomains.copy()
@@ -173,7 +174,7 @@ class Parser:
                     prev_domain_pos = prev_domains[i][1]
                     path_to = path[prev_domain_pos:]
                     path_to.append(adj_node)
-                    self.store_chain(prev_domain, adj_node, path_to)
+                    self.store_path(prev_domain, adj_node, path_to)
                     if found_existing_path:
                         break
 
@@ -184,10 +185,10 @@ class Parser:
                     if codomain not in self.graph.nodes[curr_node]['codomain_children']:
                         future_path = self.graph.nodes[adj_node]['codomain_children'][codomain]
                         new_path = [curr_node] + future_path
-                        self.store_chain(curr_node, codomain, new_path)
+                        self.store_path(curr_node, codomain, new_path)
                         self.graph.nodes[curr_node]['codomain_children'][codomain] = new_path
 
-    def store_chain(self, domain, codomain, path):
+    def store_path(self, domain, codomain, path):
         if domain in self.comp_morph_chains.keys():
             domain_dict = self.comp_morph_chains[domain]
             if codomain in domain_dict.keys():
@@ -196,6 +197,67 @@ class Parser:
                 domain_dict[codomain] = [path]
         else:
             self.comp_morph_chains[domain] = {codomain: [path]}
+
+    def to_morphism_representation(self) -> str:
+        nx.set_edge_attributes(self.graph, False, "is_added")
+        cycle_basis = self.find_undirected_cycle_basis()
+        print(cycle_basis)
+        if isinstance(cycle_basis[0], list):
+            for cycle in cycle_basis:
+                self.parse_cycle(cycle)
+        else:
+            self.parse_cycle(cycle_basis)
+
+        data = []
+        for key in self.comp_morph_eqs:
+            line = " = ".join(self.comp_morph_eqs[key])
+            data.append(line)
+        return "\n".join(data)
+
+    def find_undirected_cycle_basis(self) -> list[list] | list:
+        undirected_graph = nx.Graph(self.graph)
+        return nx.minimum_cycle_basis(undirected_graph)
+
+    def parse_cycle(self, cycle: list[Any]):
+        num_sources = 0
+        source = None
+        sink = None
+        subgraph = nx.subgraph(self.graph, cycle)
+        for node in cycle:
+            out_degree = subgraph.out_degree(node)
+            if out_degree == 2:
+                if num_sources == 1:
+                    # more than one source means we don't have equivalent morphisms
+                    return
+                num_sources += 1
+                source = node
+            # out_degree + in_degree = 2 for all nodes, so if below is the case in_degree == 2
+            if out_degree == 0:
+                sink = node
+        if num_sources == 1:
+            self.split_cycle(subgraph, source, sink)
+        elif num_sources == 0:
+            # TODO deal with cycles
+            pass
+
+    def split_cycle(self, subgraph, domain, codomain):
+        for node in subgraph.neighbors(domain):
+            path_already_added = True
+            branch = [self.graph.edges[domain, node]["name"]]
+            path_already_added = path_already_added and self.graph.edges[domain, node]["is_added"]
+            prev_node = node
+            while prev_node != codomain:
+                curr_node = list(subgraph.neighbors(prev_node))[0]
+                branch.append(self.graph.edges[prev_node, curr_node]["name"])
+                path_already_added = path_already_added and self.graph.edges[domain, node]["is_added"]
+                prev_node = curr_node
+
+            if not path_already_added:
+                comp_morph_eq = "".join(reversed(branch))
+                if (domain, codomain) in self.comp_morph_eqs:
+                    self.comp_morph_eqs[(domain, codomain)].append(comp_morph_eq)
+                else:
+                    self.comp_morph_eqs[(domain, codomain)] = [comp_morph_eq]
 
     @staticmethod
     def verify_char_is_open_bracket(i, line):
