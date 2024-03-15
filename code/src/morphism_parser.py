@@ -82,37 +82,28 @@ class MorphismParser(Parser):
         domain = self.counter
         codomain = self.counter + 1
         self.counter += 2
-        is_inverse = False
         while i < len(line):
             char = line[i]
             if char == "%":
                 break
-            if char == "-":
-                is_inverse = True
             if char == "{":
-                i = self.parse_chain(line, i, domain, codomain, is_inverse)
-                is_inverse = False
+                i = self.parse_chain(line, i, domain, codomain)
             else:
                 i += 1
 
-    def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int, is_inverse: bool = False):
+    def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int):
         i = start_pos
         prev_domain = codomain
         prev_morph = ""
-        is_prev_inverse = False
+        is_final_inverted = False
         # if we encounter the end of the line or an = we know chain has ended
         while i < len(line) and line[i] != "=":
-            if line[i] == "-":
-                is_inverse = True
-                i += 1
             if line[i] == "{":
-                prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain, is_inverse)
-                is_prev_inverse = is_inverse
-                is_inverse = False
+                prev_domain, i, prev_morph, is_final_inverted = self.process_morph(i, line, prev_domain)
             else:
                 i += 1
         if prev_morph in self.morphs:
-            if is_prev_inverse:
+            if is_final_inverted:
                 old_domain = self.morphs[prev_morph][1]
             else:
                 old_domain = self.morphs[prev_morph][0]
@@ -120,8 +111,13 @@ class MorphismParser(Parser):
                 self.contract_objects(old_domain, domain)
         return i
 
-    def process_morph(self, pos, line, prev_domain, is_inverse: bool = False):
+    def process_morph(self, pos, line, prev_domain):
         morph, pos = self.extract_label(line, pos + 1)
+        if line[pos:pos+5] == "^{-1}":
+            is_inverse = True
+            pos += 5
+        else:
+            is_inverse = False
         if morph in self.morphs:
             if is_inverse:
                 morph_codomain, curr_domain = self.morphs[morph]
@@ -140,4 +136,4 @@ class MorphismParser(Parser):
             self.add_edge(morph, prev_domain, curr_domain)
         else:
             self.add_edge(morph, curr_domain, prev_domain)
-        return curr_domain, pos, morph
+        return curr_domain, pos, morph, is_inverse

@@ -22,7 +22,7 @@ class Parser:
         Extracts the label attached to a domain, codomain, or function in the commutative diagram text representation.
         :param line: line of text containing the label, should be of the form ``"some text{Label}some more text"``.
         :param start_pos: the position of the first character of the Label.
-        :return: ``({Label},`` the position of the closing "``}``"``)``
+        :return: tuple of the form ``({Label},`` the position of the closing "``}``"+1``)``
         """
         unmatched_brackets: int = 1  # we should always start with an unmatched bracket
         i: int = start_pos
@@ -235,7 +235,7 @@ class Parser:
             inv_edge = edges[0]
             domain = inv_edge[1]
             codomain = inv_edge[0]
-            self.store_eq(domain, codomain, f"-{self.graph.edges[inv_edge]['name']}")
+            self.store_eq(domain, codomain, f"{self.graph.edges[inv_edge]['name']}^{{-1}}")
             curr_domain = codomain
             curr_codomain = next(cycle_graph.neighbors(curr_domain))
             path = [self.graph.edges[curr_domain, curr_codomain]['name']]
@@ -285,12 +285,11 @@ class Parser:
                     if node != prev_domain:
                         curr_codomain = node
                         break
-
             else:
                 curr_domain = curr_codomain
                 curr_codomain = next(graphs[curr_graph].neighbors(curr_domain))
             if inverted:
-                path.append(f"-{graphs[curr_graph].edges[curr_domain, curr_codomain]['name']}")
+                path.append(f"{graphs[curr_graph].edges[curr_domain, curr_codomain]['name']}^{{-1}}")
             else:
                 path.append(graphs[curr_graph].edges[curr_domain, curr_codomain]['name'])
         self.store_eq(domain, codomain, "".join(reversed(path)))
@@ -316,9 +315,9 @@ class Parser:
                     seen_objs.add(obj)
                     if self.graph.nodes[obj]["label"] != obj:
                         label = self.graph.nodes[obj]["label"]
-                        label_lines.append("L{" + str(obj) + "}{" + str(label) + "}")
+                        label_lines.append(f"L{{{str(obj)}}}{{{str(label)}}}")
 
             name = self.graph[edge[0]][edge[1]]['name']
-            morph_lines.append("{" + str(name) + "}{" + edge[0] + "}{" + edge[1] + "}")
+            morph_lines.append(f"{{{str(name)}}}{{{edge[0]}}}{{{edge[1]}}}")
 
         return "\n".join(label_lines + morph_lines)
