@@ -1,8 +1,8 @@
 import unittest
-import re
 
 import networkx as nx
 
+from morphism_parser import MorphismParser
 from src.parser import Parser
 
 # https://q.uiver.app/#q=WzAsNixbMCwxLCIwIl0sWzEsMSwiMSJdLFsyLDEsIjMiXSxbMywxLCI0Il0sWzEsMCwiMiJdLFsyLDIsIjUiXSxbMCwxLCJmIl0sWzEsMiwiZyJdLFsyLDMsImgiXSxbMCw0LCJpIl0sWzQsMiwiaiJdLFsxLDUsImsiLDJdLFs1LDMsImwiLDJdXQ==
@@ -29,9 +29,9 @@ LIMIT_DEF = nx.DiGraph([
 EXAMPLE_FIG = nx.DiGraph([
     (1, 0, {"name": "{f}"}),
     (2, 0, {"name": "{g}"}),
-    (3, 2, {"name": "{h}"}),
-    (1, 0, {"name": "{i}"}),
-    (3, 0, {"name": "{j}"})
+    (3, 0, {"name": "{h}"}),
+    (1, 2, {"name": "{i}"}),
+    (3, 2, {"name": "{j}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNixbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDIsIjIiXSxbMCwxLCIzIl0sWzEsMCwiNCJdLFsyLDEsIjUiXSxbMCwxLCJmIiwyXSxbMSwyLCJnIiwyXSxbMCwzLCJoIl0sWzMsNCwiaiJdLFs0LDUsImsiXSxbNSwyLCJsIl0sWzMsNSwiaSIsMl1d
@@ -94,7 +94,15 @@ BULKY_DIAMOND = nx.DiGraph([
     (6, 4, {"name": "{m}"})
 ])
 
+CYCLE = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (1, 2, {"name": "{g}"}),
+    (2, 0, {"name": "{h}"})
+])
 
+
+ALL_GRAPHS = [STAGGERED, LIMIT_DEF, EXAMPLE_FIG, BRIDGE, DOUBLY_STAGGERED, INTRO_EXFIG, BIG_CYCLE_TRIANGLES,
+              BULKY_DIAMOND, CYCLE]
 
 if __name__ == '__main__':
     unittest.main()
@@ -175,7 +183,7 @@ class TestToLatex(unittest.TestCase):
                                    ("D", "B", {"name": "i"}),
                                    ("D", "C", {"name": "j"})
                                    ])
-        print(parser.to_latex())
+        print(parser.to_tikz_diagram())
 
 
 class TestToDiagramRepresentation(unittest.TestCase):
@@ -238,11 +246,10 @@ class TestToMorphisms(unittest.TestCase):
             (7, 4, {"name": "{n}"})
         ])
 
-        print(parser.to_morphism_representation())
-        # TODO fix this test
-        pattern = re.compile(
-            r"\A({h}{g} ?= ?{k}{j}\n{i}({h}{g}|{k}{j}){f} ?= ?{n}{m}{l}|{i}({h}{g}|{k}{j}){f} ?= ?{n}{m}{l}\n{h}{g} ?= ?{k}{j})\Z")
-        self.assertRegex(parser.to_morphism_representation(), pattern)
+        with open('temp.txt', 'w') as f:
+            f.write(parser.to_morphism_representation())
+        morph_parser = MorphismParser('temp.txt')
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_non_comp_morphs(self):
         parser = Parser()
@@ -255,140 +262,35 @@ class TestToMorphisms(unittest.TestCase):
     def test_limit(self):
         parser = Parser()
         parser.graph = LIMIT_DEF
-        print(parser.to_morphism_representation())
+        with open('temp.txt', 'w') as f:
+            f.write(parser.to_morphism_representation())
+        morph_parser = MorphismParser('temp.txt')
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_bulky_diamond(self):
         parser = Parser()
         parser.graph = BULKY_DIAMOND
-        print(parser.to_morphism_representation())
+        with open('temp.txt', 'w') as f:
+            f.write(parser.to_morphism_representation())
+        morph_parser = MorphismParser('temp.txt')
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
+    def test_cycle(self):
+        parser = Parser()
+        parser.graph = CYCLE
+        with open('temp.txt', 'w') as f:
+            f.write(parser.to_morphism_representation())
+        morph_parser = MorphismParser('temp.txt')
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
-# class TestSearchForEquivCompMorphs(unittest.TestCase):
-#     @staticmethod
-#     def assertEquivalent(dict1, dict2) -> bool:
-#         if dict1.keys() != dict2.keys():
-#             return False
-#         for domain in dict1:
-#             if dict1[domain].keys() != dict2[domain].keys():
-#                 return False
-#             for codomain in dict1[domain]:
-#                 if len(dict1[domain][codomain]) != len(dict2[domain][codomain]):
-#                     return False
-#                 for chain in dict1[domain][codomain]:
-#                     if chain not in dict2[domain][codomain]:
-#                         return False
-#         return True
-#
-#     def test_staggered_diag(self):
-#         graph = STAGGERED
-#
-#         expected_dict = {
-#             0: {3: [[0, 1, 3],
-#                     [0, 2, 3]],
-#                 4: [[0, 1, 3, 4]]},
-#             1: {3: [[1, 3]],
-#                 4: [[1, 3, 4],
-#                     [1, 5, 4]]},
-#             2: {4: [[2, 3, 4]]}
-#         }
-#
-#         prsr = Parser()
-#         prsr.graph = graph
-#         prsr.unvisited_nodes = set(prsr.graph.nodes)
-#         prsr.search_for_eq_comp_morphs(0, [], [], set())
-#
-#         print(prsr.comp_morph_chains)
-#         self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
-#
-#     def test_limit_diag(self):
-#         graph = LIMIT_DEF
-#
-#         expected_dict = {
-#             0: {2: [[0, 1, 2], [0, 2]],
-#                 3: [[0, 1, 3], [0, 3]]},
-#             1: {2: [[1, 2]],
-#                 3: [[1, 3]]}
-#         }
-#
-#         prsr = Parser()
-#         prsr.graph = graph
-#         prsr.unvisited_nodes = set(prsr.graph.nodes)
-#         prsr.search_for_eq_comp_morphs(0, [], [], set())
-#
-#         self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
-#
-#     def test_bridges(self):
-#         graph = BRIDGE
-#
-#         expected_dict = {
-#             0: {5: [[0, 3, 5]],
-#                 2: [[0, 1, 2], [0, 3, 5, 2]]},
-#             3: {5: [[3, 5], [3, 4, 5]],
-#                 2: [[3, 5, 2]]}
-#         }
-#
-#         prsr = Parser()
-#         prsr.graph = graph
-#         prsr.unvisited_nodes = set(prsr.graph.nodes)
-#         prsr.search_for_eq_comp_morphs(0, [], [], set())
-#
-#         print(prsr.comp_morph_chains)
-#         self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
-#
-#     def test_doubly_staggered_diag(self):
-#         graph = DOUBLY_STAGGERED
-#
-#         expected_dict = {
-#             0: {3: [[0, 1, 3],
-#                     [0, 2, 3]],
-#                 4: [[0, 1, 3, 4]],
-#                 7: [[0, 1, 3, 4, 7]]},
-#             1: {3: [[1, 3]],
-#                 4: [[1, 3, 4],
-#                     [1, 5, 4]],
-#                 7: [[1, 3, 4, 7]]},
-#             3: {4: [[3, 4]],
-#                 7: [[3, 4, 7], [3, 6, 7]]},
-#             5: {7: [[5, 4, 7]]},
-#             2: {4: [[2, 3, 4]],
-#                 7: [[2, 3, 4, 7]]}
-#         }
-#
-#         prsr = Parser()
-#         prsr.graph = graph
-#         prsr.unvisited_nodes = set(prsr.graph.nodes)
-#         prsr.search_for_eq_comp_morphs(0, [], [], set())
-#
-#         print(prsr.comp_morph_chains)
-#         self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
-#
-#     def test_complicated_graph(self):
-#         graph = INTRO_EXFIG
-#
-#         expected_dict = {}
-#
-#         prsr = Parser()
-#         prsr.graph = graph
-#         prsr.unvisited_nodes = set(prsr.graph.nodes)
-#         prsr.search_for_eq_comp_morphs(0, [], [], set())
-#         prsr.search_for_eq_comp_morphs(6, [], [], set())
-#
-#         print(prsr.comp_morph_chains)
-#         self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
-#
-#     def test_two_domains(self):
-#         graph = BIG_CYCLE_TRIANGLES
-#
-#         expected_dict = {}
-#
-#         prsr = Parser()
-#         prsr.graph = graph
-#         prsr.unvisited_nodes = set(prsr.graph.nodes)
-#         prsr.search_for_eq_comp_morphs(0, [], [], set())
-#         # prsr.search_for_eq_comp_morphs(4, [], [], set())
-#
-#         print(prsr.comp_morph_chains)
-#         self.assertTrue(self.assertEquivalent(expected_dict, prsr.comp_morph_chains))
+    def test_all_graphs(self):
+        for graph in ALL_GRAPHS:
+            parser = Parser()
+            parser.graph = graph
+            with open('temp.txt', 'w') as f:
+                f.write(parser.to_morphism_representation())
+            morph_parser = MorphismParser('temp.txt')
+            self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
 
 class TestCycleBasis(unittest.TestCase):

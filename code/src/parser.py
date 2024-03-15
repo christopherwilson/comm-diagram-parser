@@ -67,7 +67,7 @@ class Parser:
                 line += 1
         return ob_matrix
 
-    def to_latex(self):
+    def to_tikz_diagram(self):
         self.position_nodes()
         return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", node_label="label")
 
@@ -198,15 +198,23 @@ class Parser:
         else:
             self.comp_morph_chains[domain] = {codomain: [path]}
 
+    def store_eq(self, domain, codomain, eq: str):
+        key = (domain, codomain)
+        if key in self.comp_morph_eqs:
+            self.comp_morph_eqs[key].append(eq)
+        else:
+            self.comp_morph_eqs[key] = [eq]
+
     def to_morphism_representation(self) -> str:
         nx.set_edge_attributes(self.graph, False, "is_added")
         cycle_basis = self.find_undirected_cycle_basis()
-        print(cycle_basis)
         if isinstance(cycle_basis[0], list):
             for cycle in cycle_basis:
-                self.parse_cycle(cycle)
+                cycle_graph = nx.subgraph(self.graph, cycle)
+                self.parse_cycle(cycle_graph)
         else:
-            self.parse_cycle(cycle_basis)
+            cycle_graph = nx.subgraph(self.graph, cycle_basis)
+            self.parse_cycle(cycle_graph)
 
         data = []
         for key in self.comp_morph_eqs:
@@ -218,46 +226,74 @@ class Parser:
         undirected_graph = nx.Graph(self.graph)
         return nx.minimum_cycle_basis(undirected_graph)
 
-    def parse_cycle(self, cycle: list[Any]):
-        num_sources = 0
-        source = None
-        sink = None
-        subgraph = nx.subgraph(self.graph, cycle)
-        for node in cycle:
-            out_degree = subgraph.out_degree(node)
-            if out_degree == 2:
-                if num_sources == 1:
-                    # more than one source means we don't have equivalent morphisms
-                    return
-                num_sources += 1
-                source = node
-            # out_degree + in_degree = 2 for all nodes, so if below is the case in_degree == 2
-            if out_degree == 0:
-                sink = node
-        if num_sources == 1:
-            self.split_cycle(subgraph, source, sink)
-        elif num_sources == 0:
-            # TODO deal with cycles
-            pass
+    def parse_cycle(self, cycle_graph: nx.DiGraph) -> None:
+        source = self.find_source(cycle_graph)
+        if source is not None:
+            self.split_cycle(cycle_graph, source)
+        else:  # if we don't find a source the cycle is a cycle in the digraph
+            edges = list(cycle_graph.edges())
+            inv_edge = edges[0]
+            domain = inv_edge[1]
+            codomain = inv_edge[0]
+            self.store_eq(domain, codomain, f"-{self.graph.edges[inv_edge]['name']}")
+            curr_domain = codomain
+            curr_codomain = next(cycle_graph.neighbors(curr_domain))
+            path = [self.graph.edges[curr_domain, curr_codomain]['name']]
+            while curr_codomain != codomain:
+                curr_domain = curr_codomain
+                curr_codomain = next(cycle_graph.neighbors(curr_domain))
+                path.append(self.graph.edges[curr_domain, curr_codomain]['name'])
+            eq = "".join(reversed(path))
+            self.store_eq(domain, codomain, eq)
 
-    def split_cycle(self, subgraph, domain, codomain):
-        for node in subgraph.neighbors(domain):
-            path_already_added = True
-            branch = [self.graph.edges[domain, node]["name"]]
-            path_already_added = path_already_added and self.graph.edges[domain, node]["is_added"]
-            prev_node = node
-            while prev_node != codomain:
-                curr_node = list(subgraph.neighbors(prev_node))[0]
-                branch.append(self.graph.edges[prev_node, curr_node]["name"])
-                path_already_added = path_already_added and self.graph.edges[domain, node]["is_added"]
-                prev_node = curr_node
+    @staticmethod
+    def find_source(cycle: nx.DiGraph):
+        for node in cycle.nodes:
+            if cycle.out_degree[node] == 2:
+                return node
 
-            if not path_already_added:
-                comp_morph_eq = "".join(reversed(branch))
-                if (domain, codomain) in self.comp_morph_eqs:
-                    self.comp_morph_eqs[(domain, codomain)].append(comp_morph_eq)
-                else:
-                    self.comp_morph_eqs[(domain, codomain)] = [comp_morph_eq]
+    def split_cycle(self, subgraph: nx.DiGraph, domain):
+        # first branch
+        neighbors = list(subgraph.neighbors(domain))
+        assert len(neighbors) == 2
+        path = [self.graph.edges[domain, neighbors[0]]["name"]]
+        curr_codomain = neighbors[0]
+        while subgraph.in_degree[curr_codomain] != 2:
+            curr_domain = curr_codomain
+            curr_codomain = next(subgraph.neighbors(curr_domain))
+            path.append(self.graph.edges[curr_domain, curr_codomain]["name"])
+        codomain = curr_codomain
+        self.store_eq(domain, codomain, "".join(reversed(path)))
+
+        # second branch
+        curr_domain = domain
+        curr_codomain = neighbors[1]
+        path = [self.graph.edges[curr_domain, curr_codomain]["name"]]
+        inverted = False
+        graphs: list[nx.DiGraph] = [subgraph, None]
+        curr_graph = 0
+        while curr_codomain != codomain:
+            if graphs[curr_graph].in_degree[curr_codomain] == 2:
+                inverted = not inverted
+                curr_graph = (curr_graph + 1) % 2
+                # we avoid reversing the graph unless required
+                if graphs[curr_graph] is None:
+                    graphs[curr_graph] = nx.reverse(subgraph)
+                prev_domain = curr_domain
+                curr_domain = curr_codomain
+                for node in graphs[curr_graph].neighbors(curr_domain):
+                    if node != prev_domain:
+                        curr_codomain = node
+                        break
+
+            else:
+                curr_domain = curr_codomain
+                curr_codomain = next(graphs[curr_graph].neighbors(curr_domain))
+            if inverted:
+                path.append(f"-{graphs[curr_graph].edges[curr_domain, curr_codomain]['name']}")
+            else:
+                path.append(graphs[curr_graph].edges[curr_domain, curr_codomain]['name'])
+        self.store_eq(domain, codomain, "".join(reversed(path)))
 
     @staticmethod
     def verify_char_is_open_bracket(i, line):
