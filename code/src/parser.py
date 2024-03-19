@@ -1,6 +1,5 @@
 from math import ceil, sqrt
-from typing import Any, Set
-from collections import deque
+from typing import Any
 
 import networkx as nx
 
@@ -9,7 +8,7 @@ class Parser:
     def __init__(self):
         self.unvisited_nodes = set()
         self.comp_morph_chains: dict[Any, dict[Any, list[list[Any]]]] = {}
-        self.comp_morph_eqs: dict[tuple[Any, Any], list[str]] = {}
+        self.comp_morph_eqs: dict[tuple[Any, Any], set[str]] = {}
         self.links: list[list[Any]] = []
         self.graph: nx.DiGraph = nx.DiGraph()
 
@@ -201,12 +200,12 @@ class Parser:
     def store_eq(self, domain, codomain, eq: str):
         key = (domain, codomain)
         if key in self.comp_morph_eqs:
-            self.comp_morph_eqs[key].append(eq)
+            self.comp_morph_eqs[key].add(eq)
         else:
-            self.comp_morph_eqs[key] = [eq]
+            self.comp_morph_eqs[key] = {eq}
 
     def to_morphism_representation(self) -> str:
-        nx.set_edge_attributes(self.graph, False, "is_added")
+        self.comp_morph_eqs = {}
         cycle_basis = self.find_undirected_cycle_basis()
         if isinstance(cycle_basis[0], list):
             for cycle in cycle_basis:

@@ -8,18 +8,24 @@ if __name__ == '__main__':
     unittest.main()
 
 
-class TestDiagTextToFuncComp(unittest.TestCase):
+class TestDiagTextToMorphsComp(unittest.TestCase):
     def test_exfig(self):
         prs = DiagramParser("testfiles/graph_txt/exfig.txt")
-        expected = ("{h}{f} = {g}\n"
-                    "{h}{i} = {j}")
-        self.assertEquals(prs.to_morphism_representation(), expected)
+        expected_composed_morphs = {"{h}{f}", "{g}", "{h}{i}", "{j}"}
+        morph_rep = prs.to_morphism_representation()
+        morph_rep = morph_rep.split("\n")
+        self.assertEquals(len(morph_rep), 2)
+        for row in morph_rep:
+            morphs = row.split(" = ")
+            self.assertEquals(len(morphs), 2)
+            for morph in morphs:
+                self.assertIn(morph, expected_composed_morphs)
 
     def test_rectangle(self):
         prs = DiagramParser("testfiles/graph_txt/rectangle.txt")
         func_comps = prs.to_morphism_representation()
         print(func_comps)
-        self.assertEquals(func_comps.count("\n"), 2)
+        self.assertEquals(func_comps.count("\n"), 1)
 
 
 class TestPathToFuncComp(unittest.TestCase):
@@ -33,8 +39,8 @@ class TestPathToFuncComp(unittest.TestCase):
 
 class TestTxtToGraph(unittest.TestCase):
     def test_parse_exfig(self):
-        G = DiGraph()
-        G.add_edges_from([
+        g = DiGraph()
+        g.add_edges_from([
             ("{A}", "{B}", {"name": "{f}"}),
             ("{A}", "{C}", {"name": "{g}"}),
             ("{B}", "{C}", {"name": "{h}"}),
@@ -43,14 +49,14 @@ class TestTxtToGraph(unittest.TestCase):
         ])
 
         prs = DiagramParser("testfiles/graph_txt/exfig.txt")
-        self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
+        self.assertTrue(list(g.edges.data()) == list(prs.graph.edges.data()))
 
     def test_parse_exfig_no_lbl(self):
         self.assertRaises(Exception, DiagramParser, "testfiles/exfig_no_lbl.txt")
 
     def test_parse_complex(self):
-        G = DiGraph()
-        G.add_edges_from([
+        g = DiGraph()
+        g.add_edges_from([
             ("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}",
              "{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}",
              {"name": "{1 \\times G}"}),
@@ -65,7 +71,7 @@ class TestTxtToGraph(unittest.TestCase):
              {"name": "{\\mathrm{Hom}_{\\mathscr{B}}}"})
         ])
         prs = DiagramParser("testfiles/graph_txt/complex_labels.txt")
-        self.assertTrue(list(G.edges.data()) == list(prs.get_graph().edges.data()))
+        self.assertTrue(list(g.edges.data()) == list(prs.graph.edges.data()))
 
     def test_all_endomorphisms(self):
         prs = DiagramParser("testfiles/graph_txt/exfig_all_endo.txt")

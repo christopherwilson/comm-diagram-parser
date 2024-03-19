@@ -100,9 +100,19 @@ CYCLE = nx.DiGraph([
     (2, 0, {"name": "{h}"})
 ])
 
+# https://q.uiver.app/#q=WzAsNSxbMCwxLCIwIl0sWzEsMCwiMSJdLFsyLDEsIjIiXSxbMSwxLCIzIl0sWzEsMiwiNCJdLFswLDEsImYiXSxbMSwyLCJnIl0sWzAsMywiaCIsMl0sWzMsMiwiaSIsMl0sWzAsNCwiaiIsMl0sWzQsMiwiayIsMl1d
+THREE_BRANCHES = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (1, 2, {"name": "{g}"}),
+    (0, 3, {"name": "{h}"}),
+    (3, 2, {"name": "{i}"}),
+    (0, 4, {"name": "{j}"}),
+    (4, 2, {"name": "{k}"})
+])
+
 
 ALL_GRAPHS = [STAGGERED, LIMIT_DEF, EXAMPLE_FIG, BRIDGE, DOUBLY_STAGGERED, INTRO_EXFIG, BIG_CYCLE_TRIANGLES,
-              BULKY_DIAMOND, CYCLE]
+              BULKY_DIAMOND, CYCLE, THREE_BRANCHES]
 
 if __name__ == '__main__':
     unittest.main()
@@ -282,6 +292,17 @@ class TestToMorphisms(unittest.TestCase):
             f.write(parser.to_morphism_representation())
         morph_parser = MorphismParser('temp.txt')
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
+    def test_three_branches(self):
+        parser = Parser()
+        parser.graph = THREE_BRANCHES
+        morph_rep = parser.to_morphism_representation()
+        with open('temp.txt', 'w') as f:
+            f.write(morph_rep)
+        morph_parser = MorphismParser('temp.txt')
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+        self.assertTrue(morph_rep.count('=') == 2)
+
 
     def test_all_graphs(self):
         for graph in ALL_GRAPHS:
