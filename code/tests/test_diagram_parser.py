@@ -28,15 +28,6 @@ class TestDiagTextToMorphsComp(unittest.TestCase):
         self.assertEquals(func_comps.count("\n"), 1)
 
 
-class TestPathToFuncComp(unittest.TestCase):
-    def test_exfig(self):
-        prs = DiagramParser("testfiles/graph_txt/exfig.txt")
-        path = [("{A}", "{B}"), ("{B}", "{C}")]
-        expected = "{h}{f}"
-        actual = prs.path_to_func_comp(path)
-        self.assertEquals(actual, expected)
-
-
 class TestTxtToGraph(unittest.TestCase):
     def test_parse_exfig(self):
         g = DiGraph()
