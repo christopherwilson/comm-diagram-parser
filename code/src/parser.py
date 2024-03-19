@@ -12,9 +12,6 @@ class Parser:
         self.links: list[list[Any]] = []
         self.graph: nx.DiGraph = nx.DiGraph()
 
-    def get_graph(self) -> nx.DiGraph:
-        return self.graph
-
     @staticmethod
     def extract_label(line: str, start_pos: int) -> tuple[str, int]:
         """
