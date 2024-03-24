@@ -1,9 +1,11 @@
+import os.path
+
 from src.parser import Parser
 
 
 class DiagramParser(Parser):
 
-    def __init__(self, file_path: str):
+    def __init__(self, filepath: str):
         """
         Parses a file containing a representation of a commutative diagram.
 
@@ -23,10 +25,12 @@ class DiagramParser(Parser):
         at the beginning of the file. These labels will be displayed in the diagram in place of the object.
 
         ``Domain``, ``Codomain`` and ``Function`` cannot be the empty string, but they may contain \"{\" and \"}\".
-        :param file_path: Location of the text representation of the commutative diagram.
+        :param filepath: Location of the text representation of the commutative diagram.
         """
         super().__init__()
-        with open(file_path, 'r') as f:
+        if not os.path.exists(filepath):
+            raise FileNotFoundError("No such file or directory: " + filepath)
+        with open(filepath, 'r') as f:
             line = f.readline()
             self.labels: dict[str, str] = {}
             self.labelled_objs = set()

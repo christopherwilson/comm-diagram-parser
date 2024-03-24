@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import networkx as nx
@@ -22,6 +23,8 @@ class MorphismParser(Parser):
         :param filepath: the path to the file containing the representation
         """
         super().__init__()
+        if not os.path.exists(filepath):
+            raise FileNotFoundError("No such file or directory: " + filepath)
         self.counter = 0
         self.morphs: dict[str, tuple[int, int]] = {}
         self.morphs_by_domain: dict[str, list[str]] = {}
