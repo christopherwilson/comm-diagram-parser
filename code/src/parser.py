@@ -1,3 +1,4 @@
+import heapq
 from math import ceil, sqrt
 from typing import Any
 
@@ -6,11 +7,10 @@ import networkx as nx
 
 class Parser:
     def __init__(self):
-        self.unvisited_nodes = set()
-        self.comp_morph_chains: dict[Any, dict[Any, list[list[Any]]]] = {}
+        self.cycles: dict[int, tuple[nx.DiGraph, set, set]] = {}  # (graph, sources, sinks)
         self.comp_morph_eqs: dict[tuple[Any, Any], set[str]] = {}
-        self.links: list[list[Any]] = []
         self.graph: nx.DiGraph = nx.DiGraph()
+        self.branches: dict[Any: list[tuple[Any, tuple[Any, str], tuple[Any, str]]]] = {}
 
     @staticmethod
     def extract_label(line: str, start_pos: int) -> tuple[str, int]:
@@ -71,44 +71,148 @@ class Parser:
 
     def to_morphism_representation(self) -> str:
         self.comp_morph_eqs = {}
-        cycle_basis = self.find_undirected_cycle_basis()
-        if isinstance(cycle_basis[0], list):
-            for cycle in cycle_basis:
-                cycle_graph = nx.subgraph(self.graph, cycle)
-                self.parse_cycle(cycle_graph)
-        else:
-            cycle_graph = nx.subgraph(self.graph, cycle_basis)
-            self.parse_cycle(cycle_graph)
+        graph = self.graph.copy()
+        data = self.find_minimal_equal_composed_morphs(graph)
 
-        data = []
         for key in self.comp_morph_eqs:
             line = " = ".join(self.comp_morph_eqs[key])
             data.append(line)
         return "\n".join(data)
 
-    def find_undirected_cycle_basis(self) -> list[list] | list:
-        undirected_graph = nx.Graph(self.graph)
+    def find_minimal_equal_composed_morphs(self, graph: nx.DiGraph):
+        self.condense_graph(graph)
+        cycle_basis = self.find_undirected_cycle_basis(graph)
+        sorted_cycles = []
+        cycle_id = 0
+        for cycle in cycle_basis:
+            cycle_graph: nx.DiGraph = nx.subgraph(graph, cycle)
+            sources, sinks = self.find_sources_sinks(cycle_graph, cycle_id)
+            num_sources = len(sources)
+            # we do -num_sources because heapq is a min-heap and we want a max-heap
+            heapq.heappush(sorted_cycles, (-num_sources, cycle_id))
+            self.cycles[cycle_id] = (cycle_graph, sources, sinks)
+            cycle_id += 1
+        lines = []
+
+        while sorted_cycles:
+            num_sources, cycle_id = heapq.heappop(sorted_cycles)
+            num_sources = -num_sources
+            if num_sources == 0:
+                lines.append(self.parse_directed_cycle(self.cycles[cycle_id][0]))
+            elif num_sources == 1:
+                self.parse_equation(cycle_id)
+            else:
+                pass
+
+        return lines
+
+    def parse_equation(self, cycle_id):
+        cycle, source, sink = self.cycles[cycle_id]
+        source = source.pop()
+        sink = sink.pop()
+        for init_domain in cycle.predecessors(sink):
+            path: list[str] = [cycle.edges[init_domain, sink]["name"]]
+            curr_codomain = init_domain
+            while curr_codomain != source:
+                curr_domain = next(cycle.predecessors(curr_codomain))
+                path.append(cycle.edges[curr_domain, curr_codomain]["name"])
+                curr_codomain = curr_domain
+            self.store_eq(source, sink, "".join(path))
+
+
+
+
+
+
+    @staticmethod
+    def parse_directed_cycle(directed_cycle: nx.DiGraph) -> str:
+        init_domain, init_codomain = list(directed_cycle.edges())[0]
+        init_morph = directed_cycle.edges[init_domain, init_codomain]["name"]
+        curr_codomain = next(directed_cycle.predecessors(init_domain))
+        morphs = [init_morph, directed_cycle.edges[curr_codomain, init_domain]["name"]]
+        curr_domain = None
+        while curr_domain != init_domain:
+            curr_domain = next(directed_cycle.predecessors(curr_codomain))
+            morphs.append(directed_cycle.edges[curr_domain, curr_codomain]["name"])
+            curr_codomain = curr_domain
+        return "".join(morphs)
+
+    def parse_split_cycle(self, sources: set, sinks: set, split_cycle: nx.DiGraph):
+        pass
+
+
+
+
+
+
+    def condense_graph(self, graph: nx.DiGraph):
+        for node in list(graph.nodes):
+            # noinspection PyCallingNonCallable
+            is_removable = graph.in_degree(node) == 1 and graph.out_degree(node) == 1
+            if is_removable:
+                domain = list(graph.in_edges(node))[0][0]
+                codomain = list(graph.out_edges(node))[0][1]
+                # stops the removal of cycles or the creation of self-loops
+                if domain == codomain or (codomain, domain) in graph.edges:
+                    continue
+                concatenated_morph = graph[node][codomain]["name"] + graph[domain][node]["name"]
+                if (domain, codomain) in graph.edges:
+                    self.store_eq(domain, codomain, concatenated_morph)
+                    self.store_eq(domain, codomain, graph[domain][codomain]["name"])
+                else:
+                    graph.add_edge(domain, codomain, name=concatenated_morph)
+                graph.remove_node(node)
+
+    # noinspection PyCallingNonCallable
+    @staticmethod
+    def find_sources_sinks(cycle_graph: nx.DiGraph, cycle_id=None):
+        sources = set()
+        sinks = set()
+        for node in cycle_graph.nodes:
+            if cycle_graph.in_degree(node) == 2:
+                sinks.add(node)
+            elif cycle_graph.out_degree(node) == 2:
+                sources.add(node)
+            if cycle_id is not None:
+                if "cycle_ids" not in cycle_graph.nodes[node]:
+                    cycle_graph.nodes[node]["cycle_ids"]: set[int] = {cycle_id}
+                else:
+                    cycle_graph.nodes[node]["cycle_ids"].add(cycle_id)
+        return sources, sinks
+
+    def find_suspicious_cycle_ids(self, main_cycle_id: int) -> set[int]:
+        sources = self.cycles[main_cycle_id][1]
+        sinks = self.cycles[main_cycle_id][2]
+        sources_sinks = sources.union(sinks)
+        cycle_graph: nx.DiGraph = self.cycles[main_cycle_id][0]
+        id_counts: dict[Any, int] = {}
+        for node in sources_sinks:
+            cycle_ids: set = cycle_graph.nodes[node]["cycle_ids"]
+            for cycle_id in list(cycle_ids):
+                if cycle_id == main_cycle_id:
+                    # since we're dealing with the cycle now we don't need to see it for smaller cycles
+                    cycle_ids.discard(cycle_id)
+                else:
+                    if cycle_id in id_counts:
+                        id_counts[cycle_id] += 1
+                    else:
+                        id_counts[cycle_id] = 1
+        target_count = len(sources_sinks)-2
+        suspicious_cycle_ids = set()
+        for cycle_id in id_counts:
+            if id_counts[cycle_id] >= target_count:
+                suspicious_cycle_ids.add(cycle_id)
+        return suspicious_cycle_ids
+
+
+
+    @staticmethod
+    def find_undirected_cycle_basis(graph: nx.DiGraph) -> list[list] | list:
+        undirected_graph = nx.Graph(graph)
         return nx.minimum_cycle_basis(undirected_graph)
 
     def parse_cycle(self, cycle_graph: nx.DiGraph) -> None:
-        source = self.find_source(cycle_graph)
-        if source is not None:
-            self.split_cycle(cycle_graph, source)
-        else:  # if we don't find a source the cycle is a cycle in the digraph
-            edges = list(cycle_graph.edges())
-            inv_edge = edges[0]
-            domain = inv_edge[1]
-            codomain = inv_edge[0]
-            self.store_eq(domain, codomain, f"{self.graph.edges[inv_edge]['name']}^{{-1}}")
-            curr_domain = codomain
-            curr_codomain = next(cycle_graph.neighbors(curr_domain))
-            path = [self.graph.edges[curr_domain, curr_codomain]['name']]
-            while curr_codomain != codomain:
-                curr_domain = curr_codomain
-                curr_codomain = next(cycle_graph.neighbors(curr_domain))
-                path.append(self.graph.edges[curr_domain, curr_codomain]['name'])
-            eq = "".join(reversed(path))
-            self.store_eq(domain, codomain, eq)
+        pass
 
     @staticmethod
     def find_source(cycle: nx.DiGraph):

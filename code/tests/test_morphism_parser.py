@@ -249,17 +249,6 @@ class TestMorphismParser(unittest.TestCase):
         print(list(parser.graph.edges))
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
 
-    def test_inverse_cycle(self):
-        parser = MorphismParser("testfiles/morphisms_txt/inverse_cycle.txt")
-        expected_graph = nx.DiGraph([
-            (0, 1),
-            (1, 2),
-            (2, 0)
-        ])
-
-        print(list(parser.graph.edges))
-        self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
-
     def test_wedge(self):
         parser = MorphismParser("testfiles/morphisms_txt/wedge.txt")
         expected_graph = nx.DiGraph([

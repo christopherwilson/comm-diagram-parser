@@ -5,6 +5,13 @@ import networkx as nx
 from morphism_parser import MorphismParser
 from src.parser import Parser
 
+SPLIT_GRAPH = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (0, 2, {"name": "{g}"}),
+    (3, 1, {"name": "{h}"}),
+    (3, 2, {"name": "{i}"})
+])
+
 # https://q.uiver.app/#q=WzAsNixbMCwxLCIwIl0sWzEsMSwiMSJdLFsyLDEsIjMiXSxbMywxLCI0Il0sWzEsMCwiMiJdLFsyLDIsIjUiXSxbMCwxLCJmIl0sWzEsMiwiZyJdLFsyLDMsImgiXSxbMCw0LCJpIl0sWzQsMiwiaiJdLFsxLDUsImsiLDJdLFs1LDMsImwiLDJdXQ==
 STAGGERED = nx.DiGraph([
     (0, 1, {"name": "{f}"}),
@@ -94,6 +101,20 @@ BULKY_DIAMOND = nx.DiGraph([
     (6, 4, {"name": "{m}"})
 ])
 
+# https://q.uiver.app/#q=WzAsOCxbMSwwLCIwIl0sWzAsMSwiMSJdLFswLDIsIjIiXSxbMSwxLCIzIl0sWzEsMywiNCJdLFsyLDEsIjUiXSxbMiwyLCI2Il0sWzEsNCwiNyJdLFsxLDIsImciLDJdLFsyLDMsImgiLDJdLFsyLDQsImkiXSxbMCw1LCJqIl0sWzUsNiwiayJdLFs2LDMsImwiXSxbNiw0LCJtIiwyXSxbMCwxLCJmIiwyXSxbMiw3LCJuIiwyXSxbNiw3LCJwIl1d
+BULKIER_DIAMOND = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (1, 2, {"name": "{g}"}),
+    (2, 3, {"name": "{h}"}),
+    (2, 4, {"name": "{i}"}),
+    (0, 5, {"name": "{j}"}),
+    (5, 6, {"name": "{k}"}),
+    (6, 3, {"name": "{l}"}),
+    (6, 4, {"name": "{m}"}),
+    (2, 7, {"name": "{n}"}),
+    (6, 7, {"name": "{p}"})
+])
+
 CYCLE = nx.DiGraph([
     (0, 1, {"name": "{f}"}),
     (1, 2, {"name": "{g}"}),
@@ -110,9 +131,20 @@ THREE_BRANCHES = nx.DiGraph([
     (4, 2, {"name": "{k}"})
 ])
 
+# https://q.uiver.app/#q=WzAsNyxbMCwwLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMCwxLCIzIl0sWzIsMSwiNCJdLFsyLDIsIjUiXSxbMSwyLCI2Il0sWzAsMSwiZiJdLFsxLDIsImciXSxbMCwzLCJoIiwyXSxbMywyLCJpIiwyXSxbMiw0LCJqIiwyXSxbNCw1LCJrIiwyXSxbMiw2LCJsIiwyXSxbNiw1LCJtIiwyXV0=
+FIG_8 = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (1, 2, {"name": "{g}"}),
+    (0, 3, {"name": "{h}"}),
+    (3, 2, {"name": "{i}"}),
+    (2, 4, {"name": "{j}"}),
+    (4, 5, {"name": "{k}"}),
+    (2, 6, {"name": "{l}"}),
+    (6, 5, {"name": "{m}"})
+])
 
 ALL_GRAPHS = [STAGGERED, LIMIT_DEF, EXAMPLE_FIG, BRIDGE, DOUBLY_STAGGERED, INTRO_EXFIG, BIG_CYCLE_TRIANGLES,
-              BULKY_DIAMOND, CYCLE, THREE_BRANCHES]
+              BULKY_DIAMOND, CYCLE, THREE_BRANCHES, FIG_8]
 
 if __name__ == '__main__':
     unittest.main()
@@ -280,9 +312,37 @@ class TestToMorphisms(unittest.TestCase):
     def test_bulky_diamond(self):
         parser = Parser()
         parser.graph = BULKY_DIAMOND
+        parser.graph.add_edge(1, 7)
+        parser.graph.add_edge(5, 9)
         with open('temp.txt', 'w') as f:
             f.write(parser.to_morphism_representation())
         morph_parser = MorphismParser('temp.txt')
+        parser.graph.remove_node(7)
+        parser.graph.remove_node(9)
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
+    def test_bulky_diamond_dual(self):
+        parser = Parser()
+        parser.graph = nx.reverse(BULKY_DIAMOND)
+        parser.graph.add_edge(1, 7)
+        parser.graph.add_edge(5, 9)
+        with open('temp.txt', 'w') as f:
+            f.write(parser.to_morphism_representation())
+        morph_parser = MorphismParser('temp.txt')
+        parser.graph.remove_node(7)
+        parser.graph.remove_node(9)
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
+    def test_bulkier_diamond(self):
+        parser = Parser()
+        parser.graph = BULKIER_DIAMOND
+        parser.graph.add_edge(1, 10)
+        parser.graph.add_edge(5, 9)
+        with open('temp.txt', 'w') as f:
+            f.write(parser.to_morphism_representation())
+        morph_parser = MorphismParser('temp.txt')
+        parser.graph.remove_node(10)
+        parser.graph.remove_node(9)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_cycle(self):
@@ -303,6 +363,15 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
         self.assertTrue(morph_rep.count('=') == 2)
 
+    def test_fig_8(self):
+        parser = Parser()
+        parser.graph = FIG_8
+        morph_rep = parser.to_morphism_representation()
+        print(morph_rep)
+        with open('temp.txt', 'w') as f:
+            f.write(morph_rep)
+        morph_parser = MorphismParser('temp.txt')
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_all_graphs(self):
         for graph in ALL_GRAPHS:
@@ -333,7 +402,7 @@ class TestCycleBasis(unittest.TestCase):
             {1, 3, 4, 5}
         ]
 
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis())
+        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(STAGGERED))
         self.assertTrue(cycles_match)
 
     def test_big_cycle_triangles(self):
@@ -344,7 +413,7 @@ class TestCycleBasis(unittest.TestCase):
             {0, 2, 3}
         ]
 
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis())
+        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(BIG_CYCLE_TRIANGLES))
         self.assertTrue(cycles_match)
 
     def test_bridge(self):
@@ -355,7 +424,7 @@ class TestCycleBasis(unittest.TestCase):
             {3, 4, 5}
         ]
 
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis())
+        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(BRIDGE))
         self.assertTrue(cycles_match)
 
     def test_double_stagger(self):
@@ -367,7 +436,7 @@ class TestCycleBasis(unittest.TestCase):
             {3, 4, 7, 6}
         ]
 
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis())
+        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(DOUBLY_STAGGERED))
         self.assertTrue(cycles_match)
 
     def test_intro_exfig(self):
@@ -380,5 +449,24 @@ class TestCycleBasis(unittest.TestCase):
             {0, 1, 2, 3}
         ]
 
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis())
+        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(INTRO_EXFIG))
         self.assertTrue(cycles_match)
+
+
+class TestCycleParsers(unittest.TestCase):
+    def test_directed_cycle(self):
+        parser = Parser()
+        print(parser.parse_directed_cycle(CYCLE))
+
+    def test_split_cycle(self):
+        parser = Parser()
+        parser.graph = SPLIT_GRAPH
+
+        expected_dict = {
+            1: [(2, (0, '{g}'), (3, '{i}'))],
+            2: [(1, (0, '{f}'), (3, '{h}'))]
+        }
+
+        parser.parse_split_cycle({0, 3}, {1, 2}, SPLIT_GRAPH)
+        print(parser.branches)
+        self.assertEquals(expected_dict, parser.branches)
