@@ -72,12 +72,59 @@ class Parser:
     def to_morphism_representation(self) -> str:
         self.comp_morph_eqs = {}
         graph = self.graph.copy()
-        data = self.find_minimal_equal_composed_morphs(graph)
+        rep = []
 
-        for key in self.comp_morph_eqs:
-            line = " = ".join(self.comp_morph_eqs[key])
-            data.append(line)
-        return "\n".join(data)
+        sources = []
+        sinks = []
+        for node in graph.nodes:
+            # noinspection PyCallingNonCallable
+            if graph.in_degree(node) > 1:
+                sinks.append(node)
+            # noinspection PyCallingNonCallable
+            if graph.out_degree(node) > 1:
+                sources.append(node)
+
+        for source in sources:
+            for sink in sinks:
+                line = []
+                paths = list(nx.algorithms.all_simple_edge_paths(graph, source, sink))
+                if len(paths) <= 1:
+                    continue
+                for path in paths:
+                    if not path:
+                        continue
+                    line.append(self.path_to_morph_comp(graph, path))
+                rep.append(" = ".join(line))
+        # for key in self.comp_morph_eqs:
+        #     line = " = ".join(self.comp_morph_eqs[key])
+        #     data.append(line)
+
+        cycles = nx.simple_cycles(graph)
+        for cycle in cycles:
+            morph = []
+            for i in range(len(cycle)):
+                domain = cycle[i - 1]
+                codomain = cycle[i]
+                morph.append(graph.edges[domain, codomain]["name"])
+            morph = "".join(morph)
+            rep.append(f"{morph} = {morph}{morph}")
+
+        return "\n".join(rep)
+
+    @staticmethod
+    def path_to_morph_comp(graph: nx.DiGraph, path: list[tuple]):
+        """
+        Converts a list of function domain and codomains to the equivalent composition of functions.
+        :param graph: the graph storing the morphisms
+        :param path: a list of 2-tuples, containing the domain then codomain of a function in the diagram.
+        :return: the function composition equivalent to the path.
+        """
+        funcs = [""] * len(path)
+        i = 0
+        for edge in reversed(path):
+            funcs[i] = graph.get_edge_data(edge[0], edge[1]).get("name")
+            i += 1
+        return "".join(funcs)
 
     def find_minimal_equal_composed_morphs(self, graph: nx.DiGraph):
         self.condense_graph(graph)
@@ -119,11 +166,6 @@ class Parser:
                 curr_codomain = curr_domain
             self.store_eq(source, sink, "".join(path))
 
-
-
-
-
-
     @staticmethod
     def parse_directed_cycle(directed_cycle: nx.DiGraph) -> str:
         init_domain, init_codomain = list(directed_cycle.edges())[0]
@@ -139,11 +181,6 @@ class Parser:
 
     def parse_split_cycle(self, sources: set, sinks: set, split_cycle: nx.DiGraph):
         pass
-
-
-
-
-
 
     def condense_graph(self, graph: nx.DiGraph):
         for node in list(graph.nodes):
@@ -197,19 +234,33 @@ class Parser:
                         id_counts[cycle_id] += 1
                     else:
                         id_counts[cycle_id] = 1
-        target_count = len(sources_sinks)-2
+        target_count = len(sources_sinks) - 2
         suspicious_cycle_ids = set()
         for cycle_id in id_counts:
             if id_counts[cycle_id] >= target_count:
                 suspicious_cycle_ids.add(cycle_id)
         return suspicious_cycle_ids
 
+    def find_undirected_cycle_basis(self, graph: nx.DiGraph) -> list[list] | list:
+        undirected_graph = nx.Graph(graph, weight=1)
+        max_iterations = len(undirected_graph.edges)
+        i = 0
+        while True:
+            edges = set(graph.edges)
+            cycle_basis = nx.minimum_cycle_basis(undirected_graph, weight="weight")
+            for cycle in cycle_basis:
+                subgraph = graph.subgraph(cycle)
+                sources, sinks = self.find_sources_sinks(subgraph)
+                if len(sources) == 1:
+                    edges -= set(subgraph.edges)
+                else:
+                    for edge in subgraph.edges:
+                        undirected_graph.edges[edge]["weight"] += 1
+            if len(edges) == 0 or max_iterations == i:
+                break
+            i += 1
 
-
-    @staticmethod
-    def find_undirected_cycle_basis(graph: nx.DiGraph) -> list[list] | list:
-        undirected_graph = nx.Graph(graph)
-        return nx.minimum_cycle_basis(undirected_graph)
+        return cycle_basis
 
     def parse_cycle(self, cycle_graph: nx.DiGraph) -> None:
         pass

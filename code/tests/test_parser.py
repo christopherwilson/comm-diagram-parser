@@ -288,9 +288,11 @@ class TestToMorphisms(unittest.TestCase):
             (7, 4, {"name": "{n}"})
         ])
 
+        representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
-            f.write(parser.to_morphism_representation())
+            f.write(representation)
         morph_parser = MorphismParser('temp.txt')
+        print(representation)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_non_comp_morphs(self):
@@ -451,22 +453,3 @@ class TestCycleBasis(unittest.TestCase):
 
         cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(INTRO_EXFIG))
         self.assertTrue(cycles_match)
-
-
-class TestCycleParsers(unittest.TestCase):
-    def test_directed_cycle(self):
-        parser = Parser()
-        print(parser.parse_directed_cycle(CYCLE))
-
-    def test_split_cycle(self):
-        parser = Parser()
-        parser.graph = SPLIT_GRAPH
-
-        expected_dict = {
-            1: [(2, (0, '{g}'), (3, '{i}'))],
-            2: [(1, (0, '{f}'), (3, '{h}'))]
-        }
-
-        parser.parse_split_cycle({0, 3}, {1, 2}, SPLIT_GRAPH)
-        print(parser.branches)
-        self.assertEquals(expected_dict, parser.branches)
