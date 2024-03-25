@@ -306,8 +306,10 @@ class TestToMorphisms(unittest.TestCase):
     def test_limit(self):
         parser = Parser()
         parser.graph = LIMIT_DEF
+        representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
-            f.write(parser.to_morphism_representation())
+            f.write(representation)
+        print(representation)
         morph_parser = MorphismParser('temp.txt')
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
@@ -316,8 +318,10 @@ class TestToMorphisms(unittest.TestCase):
         parser.graph = BULKY_DIAMOND
         parser.graph.add_edge(1, 7)
         parser.graph.add_edge(5, 9)
+        representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
-            f.write(parser.to_morphism_representation())
+            f.write(representation)
+        print(representation)
         morph_parser = MorphismParser('temp.txt')
         parser.graph.remove_node(7)
         parser.graph.remove_node(9)
@@ -328,8 +332,10 @@ class TestToMorphisms(unittest.TestCase):
         parser.graph = nx.reverse(BULKY_DIAMOND)
         parser.graph.add_edge(1, 7)
         parser.graph.add_edge(5, 9)
+        representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
-            f.write(parser.to_morphism_representation())
+            f.write(representation)
+        print(representation)
         morph_parser = MorphismParser('temp.txt')
         parser.graph.remove_node(7)
         parser.graph.remove_node(9)
@@ -340,8 +346,10 @@ class TestToMorphisms(unittest.TestCase):
         parser.graph = BULKIER_DIAMOND
         parser.graph.add_edge(1, 10)
         parser.graph.add_edge(5, 9)
+        representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
-            f.write(parser.to_morphism_representation())
+            f.write(representation)
+        print(representation)
         morph_parser = MorphismParser('temp.txt')
         parser.graph.remove_node(10)
         parser.graph.remove_node(9)
@@ -350,8 +358,10 @@ class TestToMorphisms(unittest.TestCase):
     def test_cycle(self):
         parser = Parser()
         parser.graph = CYCLE
+        representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
-            f.write(parser.to_morphism_representation())
+            f.write(representation)
+        print(representation)
         morph_parser = MorphismParser('temp.txt')
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
@@ -361,6 +371,7 @@ class TestToMorphisms(unittest.TestCase):
         morph_rep = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
             f.write(morph_rep)
+        print(morph_rep)
         morph_parser = MorphismParser('temp.txt')
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
         self.assertTrue(morph_rep.count('=') == 2)

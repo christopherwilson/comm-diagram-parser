@@ -71,12 +71,13 @@ class Parser:
 
     def to_morphism_representation(self) -> str:
         self.comp_morph_eqs = {}
-        graph = self.graph.copy()
+        graph = self.graph.reverse()
         rep = []
 
         sources = []
         sinks = []
         for node in graph.nodes:
+            # all possible domains/codomains of our equations will have more than one in or out edge
             # noinspection PyCallingNonCallable
             if graph.in_degree(node) > 1:
                 sinks.append(node)
@@ -84,17 +85,91 @@ class Parser:
             if graph.out_degree(node) > 1:
                 sources.append(node)
 
+        sorted_paths = []
+        paths = {}
+        path_id = 0
+        num_paths_between = {}
         for source in sources:
             for sink in sinks:
-                line = []
-                paths = list(nx.algorithms.all_simple_edge_paths(graph, source, sink))
-                if len(paths) <= 1:
+                # we deal with self-loops later
+                if source == sink:
                     continue
-                for path in paths:
-                    if not path:
+                for path in nx.algorithms.all_simple_edge_paths(graph, source, sink):
+                    # we only care about sorting the first value, but if we leave the path in heapq will try to sort
+                    # the tuple based off the entire path if the length is the same, which will involve traversing the
+                    # path so to stop this we use an id.
+                    if not path or len(path) == 0:
                         continue
-                    line.append(self.path_to_morph_comp(graph, path))
-                rep.append(" = ".join(line))
+                    heapq.heappush(sorted_paths, (len(path), path_id))
+                    paths[path_id] = path
+                    path_id += 1
+                    if (source, sink) in num_paths_between:
+                        num_paths_between[(source, sink)] += 1
+                    else:
+                        num_paths_between[(source, sink)] = 1
+
+        redundant_keys = set()
+        good_comp_morphs = {}
+        while sorted_paths:  # is not empty
+            morphs = []
+            _, path_id = heapq.heappop(sorted_paths)
+            path = paths[path_id]
+            start_node = path[0][0]
+            end_node = path[-1][1]
+            if (start_node, end_node) in redundant_keys or num_paths_between[(start_node, end_node)] == 1:
+                continue
+            curr_non_cannon_paths = {}
+            is_redundant = False
+            is_initial = True
+            for edge in path:
+                morphs.append(graph.edges[edge]["name"])
+                if "non-cannon_paths" in graph.edges[edge]:
+                    for (key, pos, is_end) in graph.edges[edge]["non-cannon_paths"]:
+                        # ensure this is the next in chain
+                        if key in curr_non_cannon_paths:
+                            prev_pos = curr_non_cannon_paths[key]
+                            if prev_pos+1 != pos:
+                                curr_non_cannon_paths.pop(key, None)
+                                continue
+                        elif pos == 0:
+                            curr_non_cannon_paths[key] = pos
+                        else:
+                            continue
+                        # can only reach this point if we've seen every edge in a non-cannon path
+                        if is_end:
+                            is_redundant = True
+                            curr_non_cannon_paths.pop(key, None)
+                            path_start, path_end = key
+                            if (start_node, end_node) != key:
+                                if path_start == start_node or path_end == end_node:
+                                    if num_paths_between[(start_node, end_node)] == num_paths_between[key]:
+                                        redundant_keys.add((start_node, end_node))
+                                        good_comp_morphs.pop((start_node, end_node), None)
+                            if num_paths_between[key] == 1:
+                                good_comp_morphs.pop(key, None)
+                            break
+                if is_redundant:
+                    break
+            if is_redundant:
+                continue
+            comp_morph = "".join(morphs)
+            if (start_node, end_node) in good_comp_morphs:
+                # then this is not the cannon edge
+                good_comp_morphs[(start_node, end_node)].append(comp_morph)
+                i = 0
+                for edge in path:
+                    entry = ((start_node, end_node), i, i == len(path)-1)
+                    if "non-cannon_paths" in graph.edges[edge]:
+                        graph.edges[edge]["non-cannon_paths"].add(entry)
+                    else:
+                        graph.edges[edge]["non-cannon_paths"] = {entry}
+                    i += 1
+            else:
+                good_comp_morphs[(start_node, end_node)] = [comp_morph]
+
+        for key in good_comp_morphs:
+            rep.append(" = ".join(good_comp_morphs[key]))
+
         # for key in self.comp_morph_eqs:
         #     line = " = ".join(self.comp_morph_eqs[key])
         #     data.append(line)
