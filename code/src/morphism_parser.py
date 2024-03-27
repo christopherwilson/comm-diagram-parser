@@ -98,34 +98,22 @@ class MorphismParser(Parser):
         i = start_pos
         prev_domain = codomain
         prev_morph = ""
-        is_final_inverted = False
         # if we encounter the end of the line or an = we know chain has ended
         while i < len(line) and line[i] != "=":
             if line[i] == "{":
-                prev_domain, i, prev_morph, is_final_inverted = self.process_morph(i, line, prev_domain)
+                prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain)
             else:
                 i += 1
         if prev_morph in self.morphs:
-            if is_final_inverted:
-                old_domain = self.morphs[prev_morph][1]
-            else:
-                old_domain = self.morphs[prev_morph][0]
+            old_domain = self.morphs[prev_morph][0]
             if old_domain != domain:
                 self.contract_objects(old_domain, domain)
         return i
 
     def process_morph(self, pos, line, prev_domain):
         morph, pos = self.extract_label(line, pos + 1)
-        if line[pos:pos+5] == "^{-1}":
-            is_inverse = True
-            pos += 5
-        else:
-            is_inverse = False
         if morph in self.morphs:
-            if is_inverse:
-                morph_codomain, curr_domain = self.morphs[morph]
-            else:
-                curr_domain, morph_codomain = self.morphs[morph]
+            curr_domain, morph_codomain = self.morphs[morph]
             # if the domains already match we don't have a problem, if they don't we need to merge the nodes
             if morph_codomain != prev_domain:
                 # IMPORTANT: we need to merge morph_codomain INTO prev_codomain, as this ensures the domain
@@ -135,8 +123,5 @@ class MorphismParser(Parser):
             # if we haven't seen the morphism before we need to assign it a codomain
             curr_domain = self.counter
             self.counter += 1
-        if is_inverse:
-            self.add_edge(morph, prev_domain, curr_domain)
-        else:
-            self.add_edge(morph, curr_domain, prev_domain)
-        return curr_domain, pos, morph, is_inverse
+        self.add_edge(morph, curr_domain, prev_domain)
+        return curr_domain, pos, morph

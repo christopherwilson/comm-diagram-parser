@@ -113,8 +113,6 @@ class Parser:
                     graph.nodes(neighbour)["visited"] = True
                     q.append(neighbour)
 
-
-
     def all_paths_method(self, graph, rep, sinks, sources):
         sorted_paths = []
         paths = {}
@@ -221,62 +219,6 @@ class Parser:
             i += 1
         return "".join(funcs)
 
-    def find_minimal_equal_composed_morphs(self, graph: nx.DiGraph):
-        self.condense_graph(graph)
-        cycle_basis = self.find_undirected_cycle_basis(graph)
-        sorted_cycles = []
-        cycle_id = 0
-        for cycle in cycle_basis:
-            cycle_graph: nx.DiGraph = nx.subgraph(graph, cycle)
-            sources, sinks = self.find_sources_sinks(cycle_graph, cycle_id)
-            num_sources = len(sources)
-            # we do -num_sources because heapq is a min-heap and we want a max-heap
-            heapq.heappush(sorted_cycles, (-num_sources, cycle_id))
-            self.cycles[cycle_id] = (cycle_graph, sources, sinks)
-            cycle_id += 1
-        lines = []
-
-        while sorted_cycles:
-            num_sources, cycle_id = heapq.heappop(sorted_cycles)
-            num_sources = -num_sources
-            if num_sources == 0:
-                lines.append(self.parse_directed_cycle(self.cycles[cycle_id][0]))
-            elif num_sources == 1:
-                self.parse_equation(cycle_id)
-            else:
-                pass
-
-        return lines
-
-    def parse_equation(self, cycle_id):
-        cycle, source, sink = self.cycles[cycle_id]
-        source = source.pop()
-        sink = sink.pop()
-        for init_domain in cycle.predecessors(sink):
-            path: list[str] = [cycle.edges[init_domain, sink]["name"]]
-            curr_codomain = init_domain
-            while curr_codomain != source:
-                curr_domain = next(cycle.predecessors(curr_codomain))
-                path.append(cycle.edges[curr_domain, curr_codomain]["name"])
-                curr_codomain = curr_domain
-            self.store_eq(source, sink, "".join(path))
-
-    @staticmethod
-    def parse_directed_cycle(directed_cycle: nx.DiGraph) -> str:
-        init_domain, init_codomain = list(directed_cycle.edges())[0]
-        init_morph = directed_cycle.edges[init_domain, init_codomain]["name"]
-        curr_codomain = next(directed_cycle.predecessors(init_domain))
-        morphs = [init_morph, directed_cycle.edges[curr_codomain, init_domain]["name"]]
-        curr_domain = None
-        while curr_domain != init_domain:
-            curr_domain = next(directed_cycle.predecessors(curr_codomain))
-            morphs.append(directed_cycle.edges[curr_domain, curr_codomain]["name"])
-            curr_codomain = curr_domain
-        return "".join(morphs)
-
-    def parse_split_cycle(self, sources: set, sinks: set, split_cycle: nx.DiGraph):
-        pass
-
     def condense_graph(self, graph: nx.DiGraph):
         for node in list(graph.nodes):
             # noinspection PyCallingNonCallable
@@ -294,119 +236,6 @@ class Parser:
                 else:
                     graph.add_edge(domain, codomain, name=concatenated_morph)
                 graph.remove_node(node)
-
-    # noinspection PyCallingNonCallable
-    @staticmethod
-    def find_sources_sinks(cycle_graph: nx.DiGraph, cycle_id=None):
-        sources = set()
-        sinks = set()
-        for node in cycle_graph.nodes:
-            if cycle_graph.in_degree(node) == 2:
-                sinks.add(node)
-            elif cycle_graph.out_degree(node) == 2:
-                sources.add(node)
-            if cycle_id is not None:
-                if "cycle_ids" not in cycle_graph.nodes[node]:
-                    cycle_graph.nodes[node]["cycle_ids"]: set[int] = {cycle_id}
-                else:
-                    cycle_graph.nodes[node]["cycle_ids"].add(cycle_id)
-        return sources, sinks
-
-    def find_suspicious_cycle_ids(self, main_cycle_id: int) -> set[int]:
-        sources = self.cycles[main_cycle_id][1]
-        sinks = self.cycles[main_cycle_id][2]
-        sources_sinks = sources.union(sinks)
-        cycle_graph: nx.DiGraph = self.cycles[main_cycle_id][0]
-        id_counts: dict[Any, int] = {}
-        for node in sources_sinks:
-            cycle_ids: set = cycle_graph.nodes[node]["cycle_ids"]
-            for cycle_id in list(cycle_ids):
-                if cycle_id == main_cycle_id:
-                    # since we're dealing with the cycle now we don't need to see it for smaller cycles
-                    cycle_ids.discard(cycle_id)
-                else:
-                    if cycle_id in id_counts:
-                        id_counts[cycle_id] += 1
-                    else:
-                        id_counts[cycle_id] = 1
-        target_count = len(sources_sinks) - 2
-        suspicious_cycle_ids = set()
-        for cycle_id in id_counts:
-            if id_counts[cycle_id] >= target_count:
-                suspicious_cycle_ids.add(cycle_id)
-        return suspicious_cycle_ids
-
-    def find_undirected_cycle_basis(self, graph: nx.DiGraph) -> list[list] | list:
-        undirected_graph = nx.Graph(graph, weight=1)
-        max_iterations = len(undirected_graph.edges)
-        i = 0
-        while True:
-            edges = set(graph.edges)
-            cycle_basis = nx.minimum_cycle_basis(undirected_graph, weight="weight")
-            for cycle in cycle_basis:
-                subgraph = graph.subgraph(cycle)
-                sources, sinks = self.find_sources_sinks(subgraph)
-                if len(sources) == 1:
-                    edges -= set(subgraph.edges)
-                else:
-                    for edge in subgraph.edges:
-                        undirected_graph.edges[edge]["weight"] += 1
-            if len(edges) == 0 or max_iterations == i:
-                break
-            i += 1
-
-        return cycle_basis
-
-    def parse_cycle(self, cycle_graph: nx.DiGraph) -> None:
-        pass
-
-    @staticmethod
-    def find_source(cycle: nx.DiGraph):
-        for node in cycle.nodes:
-            if cycle.out_degree[node] == 2:
-                return node
-
-    def split_cycle(self, subgraph: nx.DiGraph, domain):
-        # first branch
-        neighbors = list(subgraph.neighbors(domain))
-        assert len(neighbors) == 2
-        path = [self.graph.edges[domain, neighbors[0]]["name"]]
-        curr_codomain = neighbors[0]
-        while subgraph.in_degree[curr_codomain] != 2:
-            curr_domain = curr_codomain
-            curr_codomain = next(subgraph.neighbors(curr_domain))
-            path.append(self.graph.edges[curr_domain, curr_codomain]["name"])
-        codomain = curr_codomain
-        self.store_eq(domain, codomain, "".join(reversed(path)))
-
-        # second branch
-        curr_domain = domain
-        curr_codomain = neighbors[1]
-        path = [self.graph.edges[curr_domain, curr_codomain]["name"]]
-        inverted = False
-        graphs: list[nx.DiGraph] = [subgraph, None]
-        curr_graph = 0
-        while curr_codomain != codomain:
-            if graphs[curr_graph].in_degree[curr_codomain] == 2:
-                inverted = not inverted
-                curr_graph = (curr_graph + 1) % 2
-                # we avoid reversing the graph unless required
-                if graphs[curr_graph] is None:
-                    graphs[curr_graph] = nx.reverse(subgraph)
-                prev_domain = curr_domain
-                curr_domain = curr_codomain
-                for node in graphs[curr_graph].neighbors(curr_domain):
-                    if node != prev_domain:
-                        curr_codomain = node
-                        break
-            else:
-                curr_domain = curr_codomain
-                curr_codomain = next(graphs[curr_graph].neighbors(curr_domain))
-            if inverted:
-                path.append(f"{graphs[curr_graph].edges[curr_domain, curr_codomain]['name']}^{{-1}}")
-            else:
-                path.append(graphs[curr_graph].edges[curr_domain, curr_codomain]['name'])
-        self.store_eq(domain, codomain, "".join(reversed(path)))
 
     @staticmethod
     def verify_char_is_open_bracket(i, line):
