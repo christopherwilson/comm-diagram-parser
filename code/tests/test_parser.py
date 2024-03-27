@@ -5,6 +5,36 @@ import networkx as nx
 from morphism_parser import MorphismParser
 from src.parser import Parser
 
+# https://q.uiver.app/#q=WzAsOCxbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDEsIjIiXSxbMywyLCIzIl0sWzQsMiwiNCJdLFsyLDMsIjUiXSxbMSwwLCI2Il0sWzMsMCwiNyJdLFswLDEsImYiLDJdLFsxLDIsImciXSxbMiwzLCJoIl0sWzMsNCwiaSJdLFsxLDUsImoiLDJdLFs1LDMsImsiLDJdLFswLDYsImwiXSxbNiw3LCJtIl0sWzcsNCwibiJdXQ
+BRIDGE = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (1, 2, {"name": "{g}"}),
+    (2, 3, {"name": "{h}"}),
+    (3, 4, {"name": "{i}"}),
+    (1, 5, {"name": "{j}"}),
+    (5, 3, {"name": "{k}"}),
+    (0, 6, {"name": "{l}"}),
+    (6, 7, {"name": "{m}"}),
+    (7, 4, {"name": "{n}"})
+])
+
+# https://q.uiver.app/#q=WzAsOCxbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDEsIjIiXSxbMywyLCIzIl0sWzQsMiwiNCJdLFsyLDMsIjUiXSxbMSwwLCI2Il0sWzMsMCwiNyJdLFswLDEsImYiLDJdLFsxLDIsImciXSxbMiwzLCJoIl0sWzMsNCwiaSJdLFsxLDUsImoiLDJdLFs1LDMsImsiLDJdLFswLDYsImwiXSxbNiw3LCJtIl0sWzcsNCwibiJdXQ
+GOGGLES = nx.DiGraph([
+    (0, 1, {"name": "{f}"}),
+    (1, 2, {"name": "{g}"}),
+    (2, 3, {"name": "{h}"}),
+    (3, 4, {"name": "{i}"}),
+    (4, 8, {"name": "{p}"}),
+    (8, 9, {"name": "{s}"}),
+    (3, 10, {"name": "{q}"}),
+    (10, 8, {"name": "{r}"}),
+    (1, 5, {"name": "{j}"}),
+    (5, 3, {"name": "{k}"}),
+    (0, 6, {"name": "{l}"}),
+    (6, 7, {"name": "{m}"}),
+    (7, 9, {"name": "{n}"}),
+])
+
 SPLIT_GRAPH = nx.DiGraph([
     (0, 1, {"name": "{f}"}),
     (0, 2, {"name": "{g}"}),
@@ -42,7 +72,7 @@ EXAMPLE_FIG = nx.DiGraph([
 ])
 
 # https://q.uiver.app/#q=WzAsNixbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDIsIjIiXSxbMCwxLCIzIl0sWzEsMCwiNCJdLFsyLDEsIjUiXSxbMCwxLCJmIiwyXSxbMSwyLCJnIiwyXSxbMCwzLCJoIl0sWzMsNCwiaiJdLFs0LDUsImsiXSxbNSwyLCJsIl0sWzMsNSwiaSIsMl1d
-BRIDGE = nx.DiGraph([
+HOUSE = nx.DiGraph([
     (0, 1, {"name": "{f}"}),
     (1, 2, {"name": "{g}"}),
     (0, 3, {"name": "{h}"}),
@@ -143,7 +173,7 @@ FIG_8 = nx.DiGraph([
     (6, 5, {"name": "{m}"})
 ])
 
-ALL_GRAPHS = [STAGGERED, LIMIT_DEF, EXAMPLE_FIG, BRIDGE, DOUBLY_STAGGERED, INTRO_EXFIG, BIG_CYCLE_TRIANGLES,
+ALL_GRAPHS = [STAGGERED, LIMIT_DEF, EXAMPLE_FIG, HOUSE, DOUBLY_STAGGERED, INTRO_EXFIG, BIG_CYCLE_TRIANGLES,
               BULKY_DIAMOND, CYCLE, THREE_BRANCHES, FIG_8]
 
 if __name__ == '__main__':
@@ -273,27 +303,27 @@ class TestToDiagramRepresentation(unittest.TestCase):
 
 
 class TestToMorphisms(unittest.TestCase):
-    def test_bubble(self):
+    def test_graph(self, graph: nx.DiGraph):
         parser = Parser()
-        # https://q.uiver.app/#q=WzAsOCxbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDEsIjIiXSxbMywyLCIzIl0sWzQsMiwiNCJdLFsyLDMsIjUiXSxbMSwwLCI2Il0sWzMsMCwiNyJdLFswLDEsImYiLDJdLFsxLDIsImciXSxbMiwzLCJoIl0sWzMsNCwiaSJdLFsxLDUsImoiLDJdLFs1LDMsImsiLDJdLFswLDYsImwiXSxbNiw3LCJtIl0sWzcsNCwibiJdXQ==
-        parser.graph = nx.DiGraph([
-            (0, 1, {"name": "{f}"}),
-            (1, 2, {"name": "{g}"}),
-            (2, 3, {"name": "{h}"}),
-            (3, 4, {"name": "{i}"}),
-            (1, 5, {"name": "{j}"}),
-            (5, 3, {"name": "{k}"}),
-            (0, 6, {"name": "{l}"}),
-            (6, 7, {"name": "{m}"}),
-            (7, 4, {"name": "{n}"})
-        ])
-
+        parser.graph = graph
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
             f.write(representation)
         morph_parser = MorphismParser('temp.txt')
         print(representation)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
+    def test_bridge(self):
+        self.test_graph(BRIDGE)
+
+    def test_goggles(self):
+        self.test_graph(GOGGLES)
+
+    def test_stagger(self):
+        self.test_graph(STAGGERED)
+
+    def test_doubly_stagger(self):
+        self.test_graph(DOUBLY_STAGGERED)
 
     def test_non_comp_morphs(self):
         parser = Parser()
@@ -429,15 +459,15 @@ class TestCycleBasis(unittest.TestCase):
         cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(BIG_CYCLE_TRIANGLES))
         self.assertTrue(cycles_match)
 
-    def test_bridge(self):
+    def test_house(self):
         prsr = Parser()
-        prsr.graph = BRIDGE
+        prsr.graph = HOUSE
         expected_cycles = [
             {0, 1, 2, 5, 3},
             {3, 4, 5}
         ]
 
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(BRIDGE))
+        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(HOUSE))
         self.assertTrue(cycles_match)
 
     def test_double_stagger(self):

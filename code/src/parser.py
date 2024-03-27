@@ -1,4 +1,5 @@
 import heapq
+from collections import deque
 from math import ceil, sqrt
 from typing import Any
 
@@ -72,26 +73,56 @@ class Parser:
     def to_morphism_representation(self) -> str:
         self.comp_morph_eqs = {}
         graph = self.graph.reverse()
+
         rep = []
 
-        sources = []
-        sinks = []
+        sources = set()
+        sinks = set()
+        sorted_sources = []
         for node in graph.nodes:
             # all possible domains/codomains of our equations will have more than one in or out edge
             # noinspection PyCallingNonCallable
             if graph.in_degree(node) > 1:
-                sinks.append(node)
+                sinks.add(node)
             # noinspection PyCallingNonCallable
             if graph.out_degree(node) > 1:
-                sources.append(node)
+                sources.add(node)
+                sorted_sources.append((graph.out_degree(node), node))
 
+        sorted_sources.sort()
+
+        while sorted_sources:
+            _, source = sorted_sources.pop()
+            if "visited" in self.graph.nodes(source):
+                continue
+            self.modified_bfs(graph, source)
+
+        return "\n".join(rep)
+
+    def modified_bfs(self, graph: nx.DiGraph, source):
+        q = deque([source])
+        graph.nodes(source)["path_to"] = [source]
+        graph.nodes(source)["path_pos"] = 0
+        while q:
+            node = q.popleft()
+            path_to = graph.nodes(node)["path_to"]
+            for neighbour in graph.neighbors(node):
+                if "visited" in graph.nodes(neighbour):
+                    continue
+                else:
+                    graph.nodes(neighbour)["visited"] = True
+                    q.append(neighbour)
+
+
+
+    def all_paths_method(self, graph, rep, sinks, sources):
         sorted_paths = []
         paths = {}
         path_id = 0
         num_paths_between = {}
         for source in sources:
             for sink in sinks:
-                # we deal with self-loops later
+                # we deal with cycles later
                 if source == sink:
                     continue
                 for path in nx.algorithms.all_simple_edge_paths(graph, source, sink):
@@ -107,7 +138,6 @@ class Parser:
                         num_paths_between[(source, sink)] += 1
                     else:
                         num_paths_between[(source, sink)] = 1
-
         redundant_keys = set()
         good_comp_morphs = {}
         while sorted_paths:  # is not empty
@@ -120,7 +150,6 @@ class Parser:
                 continue
             curr_non_cannon_paths = {}
             is_redundant = False
-            is_initial = True
             for edge in path:
                 morphs.append(graph.edges[edge]["name"])
                 if "non-cannon_paths" in graph.edges[edge]:
@@ -128,7 +157,7 @@ class Parser:
                         # ensure this is the next in chain
                         if key in curr_non_cannon_paths:
                             prev_pos = curr_non_cannon_paths[key]
-                            if prev_pos+1 != pos:
+                            if prev_pos + 1 != pos:
                                 curr_non_cannon_paths.pop(key, None)
                                 continue
                         elif pos == 0:
@@ -140,11 +169,10 @@ class Parser:
                             is_redundant = True
                             curr_non_cannon_paths.pop(key, None)
                             path_start, path_end = key
-                            if (start_node, end_node) != key:
-                                if path_start == start_node or path_end == end_node:
-                                    if num_paths_between[(start_node, end_node)] == num_paths_between[key]:
-                                        redundant_keys.add((start_node, end_node))
-                                        good_comp_morphs.pop((start_node, end_node), None)
+                            if path_start == start_node or path_end == end_node:
+                                if num_paths_between[(start_node, end_node)] == num_paths_between[key]:
+                                    redundant_keys.add((start_node, end_node))
+                                    good_comp_morphs.pop((start_node, end_node), None)
                             if num_paths_between[key] == 1:
                                 good_comp_morphs.pop(key, None)
                             break
@@ -158,7 +186,7 @@ class Parser:
                 good_comp_morphs[(start_node, end_node)].append(comp_morph)
                 i = 0
                 for edge in path:
-                    entry = ((start_node, end_node), i, i == len(path)-1)
+                    entry = ((start_node, end_node), i, i == len(path) - 1)
                     if "non-cannon_paths" in graph.edges[edge]:
                         graph.edges[edge]["non-cannon_paths"].add(entry)
                     else:
@@ -166,14 +194,8 @@ class Parser:
                     i += 1
             else:
                 good_comp_morphs[(start_node, end_node)] = [comp_morph]
-
         for key in good_comp_morphs:
             rep.append(" = ".join(good_comp_morphs[key]))
-
-        # for key in self.comp_morph_eqs:
-        #     line = " = ".join(self.comp_morph_eqs[key])
-        #     data.append(line)
-
         cycles = nx.simple_cycles(graph)
         for cycle in cycles:
             morph = []
@@ -183,8 +205,6 @@ class Parser:
                 morph.append(graph.edges[domain, codomain]["name"])
             morph = "".join(morph)
             rep.append(f"{morph} = {morph}{morph}")
-
-        return "\n".join(rep)
 
     @staticmethod
     def path_to_morph_comp(graph: nx.DiGraph, path: list[tuple]):
