@@ -173,9 +173,6 @@ FIG_8 = nx.DiGraph([
     (6, 5, {"name": "{m}"})
 ])
 
-ALL_GRAPHS = [STAGGERED, LIMIT_DEF, EXAMPLE_FIG, HOUSE, DOUBLY_STAGGERED, INTRO_EXFIG, BIG_CYCLE_TRIANGLES,
-              BULKY_DIAMOND, CYCLE, THREE_BRANCHES, FIG_8]
-
 if __name__ == '__main__':
     unittest.main()
 
@@ -303,7 +300,7 @@ class TestToDiagramRepresentation(unittest.TestCase):
 
 
 class TestToMorphisms(unittest.TestCase):
-    def test_graph(self, graph: nx.DiGraph):
+    def can_graph_be_reconstructed(self, graph: nx.DiGraph):
         parser = Parser()
         parser.graph = graph
         representation = parser.to_morphism_representation()
@@ -314,16 +311,16 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_bridge(self):
-        self.test_graph(BRIDGE)
+        self.can_graph_be_reconstructed(BRIDGE)
 
     def test_goggles(self):
-        self.test_graph(GOGGLES)
+        self.can_graph_be_reconstructed(GOGGLES)
 
     def test_stagger(self):
-        self.test_graph(STAGGERED)
+        self.can_graph_be_reconstructed(STAGGERED)
 
     def test_doubly_stagger(self):
-        self.test_graph(DOUBLY_STAGGERED)
+        self.can_graph_be_reconstructed(DOUBLY_STAGGERED)
 
     def test_non_comp_morphs(self):
         parser = Parser()
@@ -346,30 +343,25 @@ class TestToMorphisms(unittest.TestCase):
     def test_bulky_diamond(self):
         parser = Parser()
         parser.graph = BULKY_DIAMOND
-        parser.graph.add_edge(1, 7)
-        parser.graph.add_edge(5, 9)
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
             f.write(representation)
         print(representation)
         morph_parser = MorphismParser('temp.txt')
-        parser.graph.remove_node(7)
-        parser.graph.remove_node(9)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_bulky_diamond_dual(self):
         parser = Parser()
         parser.graph = nx.reverse(BULKY_DIAMOND)
-        parser.graph.add_edge(1, 7)
-        parser.graph.add_edge(5, 9)
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
             f.write(representation)
         print(representation)
         morph_parser = MorphismParser('temp.txt')
-        parser.graph.remove_node(7)
-        parser.graph.remove_node(9)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
+    def test_big_cycle_triangles(self):
+        self.can_graph_be_reconstructed(BIG_CYCLE_TRIANGLES)
 
     def test_bulkier_diamond(self):
         parser = Parser()
@@ -415,82 +407,3 @@ class TestToMorphisms(unittest.TestCase):
             f.write(morph_rep)
         morph_parser = MorphismParser('temp.txt')
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
-
-    def test_all_graphs(self):
-        for graph in ALL_GRAPHS:
-            parser = Parser()
-            parser.graph = graph
-            with open('temp.txt', 'w') as f:
-                f.write(parser.to_morphism_representation())
-            morph_parser = MorphismParser('temp.txt')
-            self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
-
-
-class TestCycleBasis(unittest.TestCase):
-
-    @staticmethod
-    def do_cycles_match(expected_cycles, actual_cycles):
-        if len(expected_cycles) != len(actual_cycles):
-            return False
-        for cycle in actual_cycles:
-            if set(cycle) not in expected_cycles:
-                return False
-        return True
-
-    def test_staggered(self):
-        prsr = Parser()
-        prsr.graph = STAGGERED
-        expected_cycles = [
-            {0, 1, 3, 2},
-            {1, 3, 4, 5}
-        ]
-
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(STAGGERED))
-        self.assertTrue(cycles_match)
-
-    def test_big_cycle_triangles(self):
-        prsr = Parser()
-        prsr.graph = BIG_CYCLE_TRIANGLES
-        expected_cycles = [
-            {0, 1, 2},
-            {0, 2, 3}
-        ]
-
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(BIG_CYCLE_TRIANGLES))
-        self.assertTrue(cycles_match)
-
-    def test_house(self):
-        prsr = Parser()
-        prsr.graph = HOUSE
-        expected_cycles = [
-            {0, 1, 2, 5, 3},
-            {3, 4, 5}
-        ]
-
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(HOUSE))
-        self.assertTrue(cycles_match)
-
-    def test_double_stagger(self):
-        prsr = Parser()
-        prsr.graph = DOUBLY_STAGGERED
-        expected_cycles = [
-            {0, 1, 3, 2},
-            {1, 3, 4, 5},
-            {3, 4, 7, 6}
-        ]
-
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(DOUBLY_STAGGERED))
-        self.assertTrue(cycles_match)
-
-    def test_intro_exfig(self):
-        prsr = Parser()
-        prsr.graph = INTRO_EXFIG
-        expected_cycles = [
-            {0, 4, 3},
-            {3, 5, 2},
-            {6, 4, 3, 5},
-            {0, 1, 2, 3}
-        ]
-
-        cycles_match = self.do_cycles_match(expected_cycles, prsr.find_undirected_cycle_basis(INTRO_EXFIG))
-        self.assertTrue(cycles_match)

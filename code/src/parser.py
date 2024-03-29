@@ -11,7 +11,7 @@ class Parser:
         self.cycles: dict[int, tuple[nx.DiGraph, set, set]] = {}  # (graph, sources, sinks)
         self.comp_morph_eqs: dict[tuple[Any, Any], set[str]] = {}
         self.graph: nx.DiGraph = nx.DiGraph()
-        self.branches: dict[Any: list[tuple[Any, tuple[Any, str], tuple[Any, str]]]] = {}
+        self.comp_morph_paths: dict[Any, dict[Any, list[list[Any]]]] = {}
 
     @staticmethod
     def extract_label(line: str, start_pos: int) -> tuple[str, int]:
@@ -74,44 +74,128 @@ class Parser:
         self.comp_morph_eqs = {}
         graph = self.graph.reverse()
 
-        rep = []
+        rep = set()
 
-        sources = set()
-        sinks = set()
-        sorted_sources = []
+        possible_starts = []
         for node in graph.nodes:
-            # all possible domains/codomains of our equations will have more than one in or out edge
-            # noinspection PyCallingNonCallable
-            if graph.in_degree(node) > 1:
-                sinks.add(node)
-            # noinspection PyCallingNonCallable
-            if graph.out_degree(node) > 1:
-                sources.add(node)
-                sorted_sources.append((graph.out_degree(node), node))
+            if graph.out_degree[node] > 1 or graph.in_degree[node] == 0:
+                possible_starts.append((graph.in_degree[node], node))
 
-        sorted_sources.sort()
+        possible_starts.sort()
 
-        while sorted_sources:
-            _, source = sorted_sources.pop()
-            if "visited" in self.graph.nodes(source):
+        for _, source in possible_starts:
+            if "visited" in self.graph.nodes[source]:
                 continue
-            self.modified_bfs(graph, source)
+            self.find_paths_from_source(graph, source)
+
+        composition_lines = []
+        self.parse_paths(composition_lines, graph, rep)
+
+        self.find_links(composition_lines, graph, rep)
 
         return "\n".join(rep)
 
-    def modified_bfs(self, graph: nx.DiGraph, source):
+    def parse_paths(self, composition_lines, graph, rep):
+        for source in self.comp_morph_paths:
+            for sink in self.comp_morph_paths[source]:
+                eqs: set[str] = self.comp_morph_eqs[(source, sink)]
+                paths = self.comp_morph_paths[source][sink]
+                if len(eqs) > 1:
+                    rep.add(" = ".join(self.comp_morph_eqs[(source, sink)]))
+                    for path in paths:
+                        for i in range(len(path) - 1):
+                            domain = path[i]
+                            codomain = path[i + 1]
+                            edge_data = graph.edges[domain, codomain]
+                            if "line_keys" in edge_data:
+                                edge_data["line_keys"].add((source, sink))
+                            else:
+                                edge_data["line_keys"]: set = {(source, sink)}
+                elif len(eqs) == 1:
+                    composition_lines.append((source, sink))
+
+    def find_links(self, composition_lines, graph, rep):
+        for source, sink in composition_lines:
+            path = self.comp_morph_paths[source][sink][0]
+            prev_edge = (path[0], path[1])
+            if "line_keys" not in graph.edges[prev_edge]:
+                graph.edges[prev_edge]["line_keys"] = set()
+            prev_line_keys: set = graph.edges[prev_edge]["line_keys"]
+            links = []
+            prev_was_link = False
+            for i in range(1, len(path) - 1):
+                curr_edge = (path[i], path[i + 1])
+                if "line_keys" not in graph.edges[curr_edge]:
+                    graph.edges[curr_edge]["line_keys"] = set()
+                curr_line_keys: set = graph.edges[curr_edge]["line_keys"]
+                if prev_line_keys.isdisjoint(curr_line_keys):
+                    if prev_was_link:
+                        links.append(curr_edge)
+                    else:
+                        links.append([prev_edge, curr_edge])
+                        graph.edges[prev_edge]["line_keys"].add((source, sink))
+                    graph.edges[curr_edge]["line_keys"].add((source, sink))
+                    prev_was_link = True
+                else:
+                    prev_was_link = False
+                prev_edge = curr_edge
+                prev_line_keys = curr_line_keys
+            for link_path in links:
+                morphs = []
+                for edge in link_path:
+                    morphs.append(graph.edges[edge]["name"])
+                rep.add("".join(morphs))
+
+    def find_paths_from_source(self, graph: nx.DiGraph, source):
         q = deque([source])
-        graph.nodes(source)["path_to"] = [source]
-        graph.nodes(source)["path_pos"] = 0
+        graph.nodes[source]["path_to"] = [source]
+        graph.nodes[source]["prev_sources"] = []
         while q:
             node = q.popleft()
-            path_to = graph.nodes(node)["path_to"]
+            path_to = graph.nodes[node]["path_to"]
+            prev_sources = graph.nodes[node]["prev_sources"].copy()
+            if graph.out_degree[node] >= 2:
+                prev_sources.append(len(path_to) - 1)
             for neighbour in graph.neighbors(node):
-                if "visited" in graph.nodes(neighbour):
-                    continue
+                if "visited" in graph.nodes[neighbour] and source in graph.nodes[neighbour]["visited"]:
+                    is_sink = True
                 else:
-                    graph.nodes(neighbour)["visited"] = True
+                    if "visited" in graph.nodes[neighbour]:
+                        graph.nodes[neighbour]["visited"].add(source)
+                    else:
+                        graph.nodes[neighbour]["visited"] = {source}
+                    is_sink = graph.in_degree[neighbour] >= 2
+                    graph.nodes[neighbour]["path_to"] = path_to.copy()
+                    graph.nodes[neighbour]["path_to"].append(neighbour)
+                    graph.nodes[neighbour]["prev_sources"] = prev_sources
                     q.append(neighbour)
+                if is_sink:
+                    for prev_source_pos in reversed(prev_sources):
+                        prev_source = path_to[prev_source_pos]
+                        alt_path_exists = (prev_source in self.comp_morph_paths
+                                           and neighbour in self.comp_morph_paths[prev_source])
+                        self.store_path(prev_source, neighbour, path_to[prev_source_pos:] + [neighbour], graph)
+                        if alt_path_exists:
+                            break
+
+    def store_path(self, domain, codomain, path, graph):
+        if domain in self.comp_morph_paths.keys():
+            domain_dict = self.comp_morph_paths[domain]
+            if codomain in domain_dict.keys():
+                domain_dict[codomain].append(path)
+            else:
+                domain_dict[codomain] = [path]
+        else:
+            self.comp_morph_paths[domain] = {codomain: [path]}
+        morphs = []
+        for i in range(len(path)-1):
+            edge = [path[i], path[i+1]]
+            morphs.append(graph.edges[edge]["name"])
+        comp_morph = "".join(morphs)
+        if (domain, codomain) not in self.comp_morph_eqs:
+            self.comp_morph_eqs[(domain, codomain)] = {comp_morph}
+        else:
+            self.comp_morph_eqs[(domain, codomain)].add(comp_morph)
 
     def all_paths_method(self, graph, rep, sinks, sources):
         sorted_paths = []

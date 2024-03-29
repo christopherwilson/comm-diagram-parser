@@ -90,11 +90,11 @@ class MorphismParser(Parser):
             if char == "%":
                 break
             if char == "{":
-                i = self.parse_chain(line, i, domain, codomain)
+                i = self.parse_composed_morph(line, i, domain, codomain)
             else:
                 i += 1
 
-    def parse_chain(self, line: str, start_pos: int, domain: int, codomain: int):
+    def parse_composed_morph(self, line: str, start_pos: int, domain: int, codomain: int):
         i = start_pos
         prev_domain = codomain
         prev_morph = ""
@@ -117,7 +117,8 @@ class MorphismParser(Parser):
             # if the domains already match we don't have a problem, if they don't we need to merge the nodes
             if morph_codomain != prev_domain:
                 # IMPORTANT: we need to merge morph_codomain INTO prev_codomain, as this ensures the domain
-                #  of the composed morphism stays the same.
+                #  of the composed morphism stays the same. Although it would be better time complexity to go the other
+                #  way
                 self.contract_objects(morph_codomain, prev_domain)
         else:
             # if we haven't seen the morphism before we need to assign it a codomain
