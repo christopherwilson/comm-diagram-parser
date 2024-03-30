@@ -2,6 +2,7 @@ import heapq
 from collections import deque
 from math import ceil, sqrt
 from typing import Any
+from networkx.drawing.nx_agraph import graphviz_layout
 
 import networkx as nx
 
@@ -50,6 +51,10 @@ class Parser:
         return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", node_label="label")
 
     def position_nodes(self):
+        """
+        Positions nodes naively in a grid structure.
+        :return:
+        """
         # TODO better algo
         num_cols = ceil(sqrt(len(self.graph.nodes)))
         x = 0
@@ -63,7 +68,7 @@ class Parser:
         for edge in self.graph.edges:
             self.graph.edges[edge]["opt"] = "[auto]"
 
-    def store_eq(self, domain, codomain, eq: str):
+    def __store_eq(self, domain, codomain, eq: str):
         key = (domain, codomain)
         if key in self.comp_morph_eqs:
             self.comp_morph_eqs[key].add(eq)
@@ -86,16 +91,16 @@ class Parser:
         for _, source in possible_starts:
             if "visited" in self.graph.nodes[source]:
                 continue
-            self.find_paths_from_source(graph, source)
+            self.__find_paths_from_source(graph, source)
 
         composition_lines = []
-        self.parse_paths(composition_lines, graph, rep)
+        self.__parse_paths(composition_lines, graph, rep)
 
-        self.find_links(composition_lines, graph, rep)
+        self.__find_links(composition_lines, graph, rep)
 
         return "\n".join(rep)
 
-    def parse_paths(self, composition_lines, graph, rep):
+    def __parse_paths(self, composition_lines, graph, rep):
         for source in self.comp_morph_paths:
             for sink in self.comp_morph_paths[source]:
                 eqs: set[str] = self.comp_morph_eqs[(source, sink)]
@@ -114,7 +119,7 @@ class Parser:
                 elif len(eqs) == 1:
                     composition_lines.append((source, sink))
 
-    def find_links(self, composition_lines, graph, rep):
+    def __find_links(self, composition_lines, graph, rep):
         for source, sink in composition_lines:
             path = self.comp_morph_paths[source][sink][0]
             prev_edge = (path[0], path[1])
@@ -146,7 +151,7 @@ class Parser:
                     morphs.append(graph.edges[edge]["name"])
                 rep.add("".join(morphs))
 
-    def find_paths_from_source(self, graph: nx.DiGraph, source):
+    def __find_paths_from_source(self, graph: nx.DiGraph, source):
         q = deque([source])
         graph.nodes[source]["path_to"] = [source]
         graph.nodes[source]["prev_sources"] = []
@@ -164,7 +169,7 @@ class Parser:
                         graph.nodes[neighbour]["visited"].add(source)
                     else:
                         graph.nodes[neighbour]["visited"] = {source}
-                    is_sink = graph.in_degree[neighbour] >= 2
+                    is_sink = graph.in_degree[neighbour] >= 2 or graph.out_degree[neighbour] == 0
                     graph.nodes[neighbour]["path_to"] = path_to.copy()
                     graph.nodes[neighbour]["path_to"].append(neighbour)
                     graph.nodes[neighbour]["prev_sources"] = prev_sources
@@ -174,11 +179,11 @@ class Parser:
                         prev_source = path_to[prev_source_pos]
                         alt_path_exists = (prev_source in self.comp_morph_paths
                                            and neighbour in self.comp_morph_paths[prev_source])
-                        self.store_path(prev_source, neighbour, path_to[prev_source_pos:] + [neighbour], graph)
+                        self.__store_path(prev_source, neighbour, path_to[prev_source_pos:] + [neighbour], graph)
                         if alt_path_exists:
                             break
 
-    def store_path(self, domain, codomain, path, graph):
+    def __store_path(self, domain, codomain, path, graph):
         if domain in self.comp_morph_paths.keys():
             domain_dict = self.comp_morph_paths[domain]
             if codomain in domain_dict.keys():
@@ -303,10 +308,9 @@ class Parser:
             i += 1
         return "".join(funcs)
 
-    def condense_graph(self, graph: nx.DiGraph):
+    def __condense_graph(self, graph: nx.DiGraph):
         for node in list(graph.nodes):
-            # noinspection PyCallingNonCallable
-            is_removable = graph.in_degree(node) == 1 and graph.out_degree(node) == 1
+            is_removable = graph.in_degree[node] == 1 and graph.out_degree[node] == 1
             if is_removable:
                 domain = list(graph.in_edges(node))[0][0]
                 codomain = list(graph.out_edges(node))[0][1]
@@ -315,8 +319,8 @@ class Parser:
                     continue
                 concatenated_morph = graph[node][codomain]["name"] + graph[domain][node]["name"]
                 if (domain, codomain) in graph.edges:
-                    self.store_eq(domain, codomain, concatenated_morph)
-                    self.store_eq(domain, codomain, graph[domain][codomain]["name"])
+                    self.__store_eq(domain, codomain, concatenated_morph)
+                    self.__store_eq(domain, codomain, graph[domain][codomain]["name"])
                 else:
                     graph.add_edge(domain, codomain, name=concatenated_morph)
                 graph.remove_node(node)

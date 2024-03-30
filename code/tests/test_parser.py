@@ -35,13 +35,6 @@ GOGGLES = nx.DiGraph([
     (7, 9, {"name": "{n}"}),
 ])
 
-SPLIT_GRAPH = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (0, 2, {"name": "{g}"}),
-    (3, 1, {"name": "{h}"}),
-    (3, 2, {"name": "{i}"})
-])
-
 # https://q.uiver.app/#q=WzAsNixbMCwxLCIwIl0sWzEsMSwiMSJdLFsyLDEsIjMiXSxbMywxLCI0Il0sWzEsMCwiMiJdLFsyLDIsIjUiXSxbMCwxLCJmIl0sWzEsMiwiZyJdLFsyLDMsImgiXSxbMCw0LCJpIl0sWzQsMiwiaiJdLFsxLDUsImsiLDJdLFs1LDMsImwiLDJdXQ==
 STAGGERED = nx.DiGraph([
     (0, 1, {"name": "{f}"}),
@@ -310,6 +303,16 @@ class TestToMorphisms(unittest.TestCase):
         print(representation)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
+        print("\ndual:")
+        parser = Parser()
+        parser.graph = nx.reverse(graph)
+        representation = parser.to_morphism_representation()
+        with open('temp.txt', 'w') as f:
+            f.write(representation)
+        morph_parser = MorphismParser('temp.txt')
+        print(representation)
+        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
     def test_bridge(self):
         self.can_graph_be_reconstructed(BRIDGE)
 
@@ -407,3 +410,12 @@ class TestToMorphisms(unittest.TestCase):
             f.write(morph_rep)
         morph_parser = MorphismParser('temp.txt')
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+
+    def test_example_fig(self):
+        self.can_graph_be_reconstructed(EXAMPLE_FIG)
+
+    def test_house(self):
+        self.can_graph_be_reconstructed(HOUSE)
+
+    def test_intro_exfig(self):
+        self.can_graph_be_reconstructed(INTRO_EXFIG)
