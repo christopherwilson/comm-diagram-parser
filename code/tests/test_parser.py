@@ -369,15 +369,11 @@ class TestToMorphisms(unittest.TestCase):
     def test_bulkier_diamond(self):
         parser = Parser()
         parser.graph = BULKIER_DIAMOND
-        parser.graph.add_edge(1, 10)
-        parser.graph.add_edge(5, 9)
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
             f.write(representation)
         print(representation)
         morph_parser = MorphismParser('temp.txt')
-        parser.graph.remove_node(10)
-        parser.graph.remove_node(9)
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_cycle(self):

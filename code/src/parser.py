@@ -2,7 +2,6 @@ import heapq
 from collections import deque
 from math import ceil, sqrt
 from typing import Any
-from networkx.drawing.nx_agraph import graphviz_layout
 
 import networkx as nx
 
@@ -52,8 +51,7 @@ class Parser:
 
     def position_nodes(self):
         """
-        Positions nodes naively in a grid structure.
-        :return:
+        Positions nodes of graph naively in a grid structure.
         """
         # TODO better algo
         num_cols = ceil(sqrt(len(self.graph.nodes)))
@@ -68,12 +66,18 @@ class Parser:
         for edge in self.graph.edges:
             self.graph.edges[edge]["opt"] = "[auto]"
 
-    def __store_eq(self, domain, codomain, eq: str):
+    def __store_comp_morph(self, domain, codomain, comp_morph: str):
+        """
+        Stores a composed morphism going from domain to codomain is self.comp_morph_eqs
+        :param domain: the vertex representing the domain of the composed morphism
+        :param codomain: the vertex representing the codomain of the composed morphism
+        :param comp_morph: the composed morphism
+        """
         key = (domain, codomain)
         if key in self.comp_morph_eqs:
-            self.comp_morph_eqs[key].add(eq)
+            self.comp_morph_eqs[key].add(comp_morph)
         else:
-            self.comp_morph_eqs[key] = {eq}
+            self.comp_morph_eqs[key] = {comp_morph}
 
     def to_morphism_representation(self) -> str:
         self.comp_morph_eqs = {}
@@ -85,13 +89,14 @@ class Parser:
         for node in graph.nodes:
             if graph.out_degree[node] > 1 or graph.in_degree[node] == 0:
                 possible_starts.append((graph.in_degree[node], node))
+            graph.nodes[node]["visited_from"] = set()
 
         possible_starts.sort()
 
         for _, source in possible_starts:
-            if "visited" in self.graph.nodes[source]:
+            if "visited" in graph.nodes[source]:
                 continue
-            self.__find_paths_from_source(graph, source)
+            self.__search_for_eq_comp_morphs(graph, source, [], [], set())
 
         composition_lines = []
         self.__parse_paths(composition_lines, graph, rep)
@@ -99,6 +104,56 @@ class Parser:
         self.__find_links(composition_lines, graph, rep)
 
         return "\n".join(rep)
+
+    def __search_for_eq_comp_morphs(self, graph: nx.DiGraph, curr_node: Any, path: list[Any],
+                                    prev_sources: list[tuple[Any, int]], prev_sinks: set[tuple[Any, int]]):
+        node_pos = len(path)
+        path.append(curr_node)
+        graph.nodes[curr_node]["visited"] = True
+        is_source = graph.out_degree[curr_node] > 1 or graph.in_degree[curr_node] == 0
+        is_sink = graph.in_degree[curr_node] > 1 or graph.out_degree[curr_node] == 0
+
+        if is_sink:
+            graph.nodes[curr_node]['codomain_children']: dict[Any, list[Any]] = {}
+            for domain, domain_pos in prev_sources:
+                self.__store_path(domain, curr_node, path[domain_pos:], graph)
+            for codomain, codomain_pos in prev_sinks:
+                graph.nodes[codomain]['codomain_children'][curr_node] = path[codomain_pos:]
+            prev_sinks = prev_sinks.copy()
+            prev_sinks.add((curr_node, node_pos))
+
+        if is_source:
+            prev_sources.append((curr_node, node_pos))
+
+        for adj_node in graph.adj[curr_node]:
+            if "visited" not in graph.nodes[adj_node]:
+                branch_path = path.copy()
+                self.__search_for_eq_comp_morphs(graph, adj_node, branch_path, prev_sources.copy(), prev_sinks)
+            else:
+                for prev_domain, prev_domain_pos in reversed(prev_sources):
+                    found_existing_path = (prev_domain in self.comp_morph_paths
+                                           and adj_node in self.comp_morph_paths[prev_domain])
+                    path_to = path[prev_domain_pos:]
+                    path_to.append(adj_node)
+                    self.__store_path(prev_domain, adj_node, path_to, graph)
+                    if found_existing_path:
+                        break
+
+                if "codomain_children" not in graph.nodes[curr_node]:
+                    graph.nodes[curr_node]['codomain_children'] = {}
+
+                for prev_codomain, prev_codomain_pos in prev_sinks:
+                    if adj_node in graph.nodes[prev_codomain]["codomain_children"]:
+                        continue
+                    path_to = path[prev_codomain_pos:]
+                    path_to.append(adj_node)
+                    graph.nodes[prev_codomain]["codomain_children"][adj_node] = path_to
+
+                for codomain in graph.nodes[adj_node]['codomain_children']:
+                    future_path = graph.nodes[adj_node]['codomain_children'][codomain]
+                    new_path = [curr_node] + future_path
+                    self.__store_path(curr_node, codomain, new_path, graph)
+                    graph.nodes[curr_node]['codomain_children'][codomain] = new_path
 
     def __parse_paths(self, composition_lines, graph, rep):
         for source in self.comp_morph_paths:
@@ -239,6 +294,7 @@ class Parser:
             is_redundant = False
             for edge in path:
                 morphs.append(graph.edges[edge]["name"])
+                # if this edge is part of a non-cannon path
                 if "non-cannon_paths" in graph.edges[edge]:
                     for (key, pos, is_end) in graph.edges[edge]["non-cannon_paths"]:
                         # ensure this is the next in chain
@@ -291,7 +347,7 @@ class Parser:
                 codomain = cycle[i]
                 morph.append(graph.edges[domain, codomain]["name"])
             morph = "".join(morph)
-            rep.append(f"{morph} = {morph}{morph}")
+            rep.append(f"{morph}")
 
     @staticmethod
     def path_to_morph_comp(graph: nx.DiGraph, path: list[tuple]):
@@ -309,6 +365,10 @@ class Parser:
         return "".join(funcs)
 
     def __condense_graph(self, graph: nx.DiGraph):
+        """
+        Contracts any in_degree == 1, out_degree == 1 edge of the graph into a single edge
+        :param graph: graph to contract
+        """
         for node in list(graph.nodes):
             is_removable = graph.in_degree[node] == 1 and graph.out_degree[node] == 1
             if is_removable:
@@ -319,8 +379,8 @@ class Parser:
                     continue
                 concatenated_morph = graph[node][codomain]["name"] + graph[domain][node]["name"]
                 if (domain, codomain) in graph.edges:
-                    self.__store_eq(domain, codomain, concatenated_morph)
-                    self.__store_eq(domain, codomain, graph[domain][codomain]["name"])
+                    self.__store_comp_morph(domain, codomain, concatenated_morph)
+                    self.__store_comp_morph(domain, codomain, graph[domain][codomain]["name"])
                 else:
                     graph.add_edge(domain, codomain, name=concatenated_morph)
                 graph.remove_node(node)
@@ -337,6 +397,10 @@ class Parser:
             raise Exception("Unexpected Character\n" + line + '-' * i + '^')
 
     def to_diagram_representation(self) -> str:
+        """
+        Converts stored graph into the diagram representation
+        :return: the diagram representation as a string
+        """
         label_lines = []
         morph_lines = []
         seen_objs = set()
