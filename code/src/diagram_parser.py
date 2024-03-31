@@ -32,18 +32,17 @@ class DiagramParser(Parser):
             raise FileNotFoundError("No such file or directory: " + filepath)
         with open(filepath, 'r') as f:
             line = f.readline()
-            self.labels: dict[str, str] = {}
             self.labelled_objs = set()
             while line[0] == 'L':
-                self.parse_label_line(line)
+                self.__parse_label_line(line)
                 line = f.readline()
-            self.parse_morph_line(line)
+            self.__parse_morph_line(line)
             for line in f:
                 if line[0] == "%":  # lets us comment
                     continue
-                self.parse_morph_line(line)
+                self.__parse_morph_line(line)
 
-    def parse_morph_line(self, line: str):
+    def __parse_morph_line(self, line: str):
         """
         Parses a line of the form::
 
@@ -65,12 +64,12 @@ class DiagramParser(Parser):
                 num_objs += 1
                 # if obj is an object and not a map label
                 if num_objs > 1:
-                    self.label_node(obj)
+                    self.__label_node(obj)
             if num_objs == 3:
                 break
-        self.graph.add_edge(objs[1], objs[2], name=objs[0])
+        self.graph.add_edge(objs[1], objs[2], label=objs[0])
 
-    def label_node(self, obj):
+    def __label_node(self, obj):
         """
         Labels a node in the graph with either the assigned label or the name of the node if no label has been
         assigned. Will do nothing if the object has already been labelled.
@@ -78,16 +77,12 @@ class DiagramParser(Parser):
         :param obj: the object/node to be labelled
         :return:
         """
+        # if object is not labelled, must not have a label assigned so the label becomes an object.
         if obj not in self.labelled_objs:
-            # is there a label assigned to this object
-            if obj in self.labels:
-                label = self.labels[obj]
-            else:
-                label = obj
-            self.graph.add_node(obj, label=label)
+            self.graph.add_node(obj, label=obj)
             self.labelled_objs.add(obj)
 
-    def parse_label_line(self, line: str):
+    def __parse_label_line(self, line: str):
         """
         Parses a line of the form::
 
@@ -100,5 +95,6 @@ class DiagramParser(Parser):
         obj, i = self.extract_label(line, 2)
         self.verify_char_is_open_bracket(i, line)
         label, _ = self.extract_label(line, i + 1)
-        self.labels[obj] = label
+        self.labelled_objs.add(obj)
+        self.graph.add_node(obj, label=label)
 

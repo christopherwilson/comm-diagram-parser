@@ -35,7 +35,7 @@ class MorphismParser(Parser):
 
     def add_edge(self, morph, domain, codomain):
         # dealing with graph
-        self.graph.add_edge(domain, codomain, name=morph)
+        self.graph.add_edge(domain, codomain, label=morph)
         self.graph.nodes[domain]['label'] = "$\\bullet$"
         self.graph.nodes[codomain]['label'] = "$\\bullet$"
 

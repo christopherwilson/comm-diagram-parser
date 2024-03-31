@@ -7,163 +7,163 @@ from src.parser import Parser
 
 # https://q.uiver.app/#q=WzAsOCxbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDEsIjIiXSxbMywyLCIzIl0sWzQsMiwiNCJdLFsyLDMsIjUiXSxbMSwwLCI2Il0sWzMsMCwiNyJdLFswLDEsImYiLDJdLFsxLDIsImciXSxbMiwzLCJoIl0sWzMsNCwiaSJdLFsxLDUsImoiLDJdLFs1LDMsImsiLDJdLFswLDYsImwiXSxbNiw3LCJtIl0sWzcsNCwibiJdXQ
 BRIDGE = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (2, 3, {"name": "{h}"}),
-    (3, 4, {"name": "{i}"}),
-    (1, 5, {"name": "{j}"}),
-    (5, 3, {"name": "{k}"}),
-    (0, 6, {"name": "{l}"}),
-    (6, 7, {"name": "{m}"}),
-    (7, 4, {"name": "{n}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (2, 3, {"label": "{h}"}),
+    (3, 4, {"label": "{i}"}),
+    (1, 5, {"label": "{j}"}),
+    (5, 3, {"label": "{k}"}),
+    (0, 6, {"label": "{l}"}),
+    (6, 7, {"label": "{m}"}),
+    (7, 4, {"label": "{n}"})
 ])
 
 # https://q.uiver.app/#q=WzAsOCxbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDEsIjIiXSxbMywyLCIzIl0sWzQsMiwiNCJdLFsyLDMsIjUiXSxbMSwwLCI2Il0sWzMsMCwiNyJdLFswLDEsImYiLDJdLFsxLDIsImciXSxbMiwzLCJoIl0sWzMsNCwiaSJdLFsxLDUsImoiLDJdLFs1LDMsImsiLDJdLFswLDYsImwiXSxbNiw3LCJtIl0sWzcsNCwibiJdXQ
 GOGGLES = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (2, 3, {"name": "{h}"}),
-    (3, 4, {"name": "{i}"}),
-    (4, 8, {"name": "{p}"}),
-    (8, 9, {"name": "{s}"}),
-    (3, 10, {"name": "{q}"}),
-    (10, 8, {"name": "{r}"}),
-    (1, 5, {"name": "{j}"}),
-    (5, 3, {"name": "{k}"}),
-    (0, 6, {"name": "{l}"}),
-    (6, 7, {"name": "{m}"}),
-    (7, 9, {"name": "{n}"}),
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (2, 3, {"label": "{h}"}),
+    (3, 4, {"label": "{i}"}),
+    (4, 8, {"label": "{p}"}),
+    (8, 9, {"label": "{s}"}),
+    (3, 10, {"label": "{q}"}),
+    (10, 8, {"label": "{r}"}),
+    (1, 5, {"label": "{j}"}),
+    (5, 3, {"label": "{k}"}),
+    (0, 6, {"label": "{l}"}),
+    (6, 7, {"label": "{m}"}),
+    (7, 9, {"label": "{n}"}),
 ])
 
 # https://q.uiver.app/#q=WzAsNixbMCwxLCIwIl0sWzEsMSwiMSJdLFsyLDEsIjMiXSxbMywxLCI0Il0sWzEsMCwiMiJdLFsyLDIsIjUiXSxbMCwxLCJmIl0sWzEsMiwiZyJdLFsyLDMsImgiXSxbMCw0LCJpIl0sWzQsMiwiaiJdLFsxLDUsImsiLDJdLFs1LDMsImwiLDJdXQ==
 STAGGERED = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 3, {"name": "{g}"}),
-    (3, 4, {"name": "{h}"}),
-    (0, 2, {"name": "{i}"}),
-    (2, 3, {"name": "{j}"}),
-    (1, 5, {"name": "{k}"}),
-    (5, 4, {"name": "{l}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 3, {"label": "{g}"}),
+    (3, 4, {"label": "{h}"}),
+    (0, 2, {"label": "{i}"}),
+    (2, 3, {"label": "{j}"}),
+    (1, 5, {"label": "{k}"}),
+    (5, 4, {"label": "{l}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNCxbMCwxLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMSwyLCIzIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFswLDMsImgiLDJdLFsyLDEsImkiLDJdLFsyLDMsImoiXV0=
 LIMIT_DEF = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (0, 2, {"name": "{g}"}),
-    (0, 3, {"name": "{h}"}),
-    (2, 1, {"name": "{i}"}),
-    (2, 3, {"name": "{j}"})
+    (0, 1, {"label": "{f}"}),
+    (0, 2, {"label": "{g}"}),
+    (0, 3, {"label": "{h}"}),
+    (2, 1, {"label": "{i}"}),
+    (2, 3, {"label": "{j}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNCxbMCwxLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMSwyLCIzIl0sWzEsMCwiZiIsMl0sWzIsMCwiZyJdLFszLDAsImgiXSxbMSwyLCJpIl0sWzMsMiwiaiIsMl1d
 EXAMPLE_FIG = nx.DiGraph([
-    (1, 0, {"name": "{f}"}),
-    (2, 0, {"name": "{g}"}),
-    (3, 0, {"name": "{h}"}),
-    (1, 2, {"name": "{i}"}),
-    (3, 2, {"name": "{j}"})
+    (1, 0, {"label": "{f}"}),
+    (2, 0, {"label": "{g}"}),
+    (3, 0, {"label": "{h}"}),
+    (1, 2, {"label": "{i}"}),
+    (3, 2, {"label": "{j}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNixbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDIsIjIiXSxbMCwxLCIzIl0sWzEsMCwiNCJdLFsyLDEsIjUiXSxbMCwxLCJmIiwyXSxbMSwyLCJnIiwyXSxbMCwzLCJoIl0sWzMsNCwiaiJdLFs0LDUsImsiXSxbNSwyLCJsIl0sWzMsNSwiaSIsMl1d
 HOUSE = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (0, 3, {"name": "{h}"}),
-    (3, 5, {"name": "{i}"}),
-    (3, 4, {"name": "{j}"}),
-    (4, 5, {"name": "{k}"}),
-    (5, 2, {"name": "{l}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (0, 3, {"label": "{h}"}),
+    (3, 5, {"label": "{i}"}),
+    (3, 4, {"label": "{j}"}),
+    (4, 5, {"label": "{k}"}),
+    (5, 2, {"label": "{l}"})
 ])
 
 # https://q.uiver.app/#q=WzAsOCxbMCwxLCIwIl0sWzEsMSwiMSJdLFsyLDEsIjMiXSxbMywxLCI0Il0sWzEsMiwiMiJdLFsyLDAsIjUiXSxbNCwxLCI3Il0sWzMsMiwiNiJdLFswLDEsImYiXSxbMSwyLCJnIl0sWzIsMywiaCJdLFswLDQsImkiLDJdLFs0LDIsImoiLDJdLFsxLDUsImsiXSxbNSwzLCJsIl0sWzMsNiwibSJdLFsyLDcsIm4iLDJdLFs3LDYsIm8iLDJdXQ==
 DOUBLY_STAGGERED = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 3, {"name": "{g}"}),
-    (3, 4, {"name": "{h}"}),
-    (0, 2, {"name": "{i}"}),
-    (2, 3, {"name": "{j}"}),
-    (1, 5, {"name": "{k}"}),
-    (5, 4, {"name": "{l}"}),
-    (4, 7, {"name": "{m}"}),
-    (3, 6, {"name": "{n}"}),
-    (6, 7, {"name": "{o}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 3, {"label": "{g}"}),
+    (3, 4, {"label": "{h}"}),
+    (0, 2, {"label": "{i}"}),
+    (2, 3, {"label": "{j}"}),
+    (1, 5, {"label": "{k}"}),
+    (5, 4, {"label": "{l}"}),
+    (4, 7, {"label": "{m}"}),
+    (3, 6, {"label": "{n}"}),
+    (6, 7, {"label": "{o}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNyxbMCwwLCIwIl0sWzEsMiwiMiJdLFswLDEsIjEiXSxbMSwxLCIzIl0sWzEsMCwiNCJdLFsyLDEsIjUiXSxbMiwwLCI2Il0sWzAsMiwiZiIsMl0sWzIsMSwiZyIsMl0sWzAsMywiaCJdLFszLDEsImkiXSxbMCw0LCJqIl0sWzQsMywiayJdLFszLDUsImwiXSxbNSwxLCJtIl0sWzYsNCwibiIsMl0sWzYsNSwicCJdXQ==
 INTRO_EXFIG = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (0, 3, {"name": "{h}"}),
-    (3, 2, {"name": "{i}"}),
-    (0, 4, {"name": "{j}"}),
-    (4, 3, {"name": "{k}"}),
-    (3, 5, {"name": "{l}"}),
-    (5, 2, {"name": "{m}"}),
-    (6, 4, {"name": "{n}"}),
-    (6, 5, {"name": "{p}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (0, 3, {"label": "{h}"}),
+    (3, 2, {"label": "{i}"}),
+    (0, 4, {"label": "{j}"}),
+    (4, 3, {"label": "{k}"}),
+    (3, 5, {"label": "{l}"}),
+    (5, 2, {"label": "{m}"}),
+    (6, 4, {"label": "{n}"}),
+    (6, 5, {"label": "{p}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNCxbMCwxLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMSwyLCIzIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFswLDMsImgiLDJdLFsxLDIsImkiXSxbMiwzLCJqIl1d
 BIG_CYCLE_TRIANGLES = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (0, 2, {"name": "{g}"}),
-    (0, 3, {"name": "{h}"}),
-    (1, 2, {"name": "{i}"}),
-    (2, 3, {"name": "{j}"})
+    (0, 1, {"label": "{f}"}),
+    (0, 2, {"label": "{g}"}),
+    (0, 3, {"label": "{h}"}),
+    (1, 2, {"label": "{i}"}),
+    (2, 3, {"label": "{j}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNyxbMSwwLCIwIl0sWzAsMSwiMSJdLFswLDIsIjIiXSxbMSwxLCIzIl0sWzEsMywiNCJdLFsyLDEsIjUiXSxbMiwyLCI2Il0sWzEsMiwiZyIsMl0sWzIsMywiaCIsMl0sWzIsNCwiaSIsMl0sWzAsNSwiaiJdLFs1LDYsImsiXSxbNiwzLCJsIl0sWzYsNCwibSJdLFswLDEsImYiLDJdXQ==
 BULKY_DIAMOND = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (2, 3, {"name": "{h}"}),
-    (2, 4, {"name": "{i}"}),
-    (0, 5, {"name": "{j}"}),
-    (5, 6, {"name": "{k}"}),
-    (6, 3, {"name": "{l}"}),
-    (6, 4, {"name": "{m}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (2, 3, {"label": "{h}"}),
+    (2, 4, {"label": "{i}"}),
+    (0, 5, {"label": "{j}"}),
+    (5, 6, {"label": "{k}"}),
+    (6, 3, {"label": "{l}"}),
+    (6, 4, {"label": "{m}"})
 ])
 
 # https://q.uiver.app/#q=WzAsOCxbMSwwLCIwIl0sWzAsMSwiMSJdLFswLDIsIjIiXSxbMSwxLCIzIl0sWzEsMywiNCJdLFsyLDEsIjUiXSxbMiwyLCI2Il0sWzEsNCwiNyJdLFsxLDIsImciLDJdLFsyLDMsImgiLDJdLFsyLDQsImkiXSxbMCw1LCJqIl0sWzUsNiwiayJdLFs2LDMsImwiXSxbNiw0LCJtIiwyXSxbMCwxLCJmIiwyXSxbMiw3LCJuIiwyXSxbNiw3LCJwIl1d
 BULKIER_DIAMOND = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (2, 3, {"name": "{h}"}),
-    (2, 4, {"name": "{i}"}),
-    (0, 5, {"name": "{j}"}),
-    (5, 6, {"name": "{k}"}),
-    (6, 3, {"name": "{l}"}),
-    (6, 4, {"name": "{m}"}),
-    (2, 7, {"name": "{n}"}),
-    (6, 7, {"name": "{p}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (2, 3, {"label": "{h}"}),
+    (2, 4, {"label": "{i}"}),
+    (0, 5, {"label": "{j}"}),
+    (5, 6, {"label": "{k}"}),
+    (6, 3, {"label": "{l}"}),
+    (6, 4, {"label": "{m}"}),
+    (2, 7, {"label": "{n}"}),
+    (6, 7, {"label": "{p}"})
 ])
 
 CYCLE = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (2, 0, {"name": "{h}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (2, 0, {"label": "{h}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNSxbMCwxLCIwIl0sWzEsMCwiMSJdLFsyLDEsIjIiXSxbMSwxLCIzIl0sWzEsMiwiNCJdLFswLDEsImYiXSxbMSwyLCJnIl0sWzAsMywiaCIsMl0sWzMsMiwiaSIsMl0sWzAsNCwiaiIsMl0sWzQsMiwiayIsMl1d
 THREE_BRANCHES = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (0, 3, {"name": "{h}"}),
-    (3, 2, {"name": "{i}"}),
-    (0, 4, {"name": "{j}"}),
-    (4, 2, {"name": "{k}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (0, 3, {"label": "{h}"}),
+    (3, 2, {"label": "{i}"}),
+    (0, 4, {"label": "{j}"}),
+    (4, 2, {"label": "{k}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNyxbMCwwLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMCwxLCIzIl0sWzIsMSwiNCJdLFsyLDIsIjUiXSxbMSwyLCI2Il0sWzAsMSwiZiJdLFsxLDIsImciXSxbMCwzLCJoIiwyXSxbMywyLCJpIiwyXSxbMiw0LCJqIiwyXSxbNCw1LCJrIiwyXSxbMiw2LCJsIiwyXSxbNiw1LCJtIiwyXV0=
 FIG_8 = nx.DiGraph([
-    (0, 1, {"name": "{f}"}),
-    (1, 2, {"name": "{g}"}),
-    (0, 3, {"name": "{h}"}),
-    (3, 2, {"name": "{i}"}),
-    (2, 4, {"name": "{j}"}),
-    (4, 5, {"name": "{k}"}),
-    (2, 6, {"name": "{l}"}),
-    (6, 5, {"name": "{m}"})
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (0, 3, {"label": "{h}"}),
+    (3, 2, {"label": "{i}"}),
+    (2, 4, {"label": "{j}"}),
+    (4, 5, {"label": "{k}"}),
+    (2, 6, {"label": "{l}"}),
+    (6, 5, {"label": "{m}"})
 ])
 
 if __name__ == '__main__':
@@ -239,11 +239,11 @@ class TestExtractLabel(unittest.TestCase):
 class TestToLatex(unittest.TestCase):
     def test_exfig(self):
         parser = Parser()
-        parser.graph = nx.DiGraph([("A", "B", {"name": "f"}),
-                                   ("A", "C", {"name": "g"}),
-                                   ("B", "C", {"name": "h"}),
-                                   ("D", "B", {"name": "i"}),
-                                   ("D", "C", {"name": "j"})
+        parser.graph = nx.DiGraph([("A", "B", {"label": "f"}),
+                                   ("A", "C", {"label": "g"}),
+                                   ("B", "C", {"label": "h"}),
+                                   ("D", "B", {"label": "i"}),
+                                   ("D", "C", {"label": "j"})
                                    ])
         print(parser.to_tikz_diagram())
 
@@ -251,11 +251,11 @@ class TestToLatex(unittest.TestCase):
 class TestToDiagramRepresentation(unittest.TestCase):
     def test_exfig(self):
         parser = Parser()
-        parser.graph = nx.DiGraph([("A", "B", {"name": "f"}),
-                                   ("A", "C", {"name": "g"}),
-                                   ("B", "C", {"name": "h"}),
-                                   ("D", "B", {"name": "i"}),
-                                   ("D", "C", {"name": "j"})
+        parser.graph = nx.DiGraph([("A", "B", {"label": "f"}),
+                                   ("A", "C", {"label": "g"}),
+                                   ("B", "C", {"label": "h"}),
+                                   ("D", "B", {"label": "i"}),
+                                   ("D", "C", {"label": "j"})
                                    ])
         for node in parser.graph:
             parser.graph.nodes[node]["label"] = node
@@ -272,11 +272,11 @@ class TestToDiagramRepresentation(unittest.TestCase):
 
     def test_exfig_endos(self):
         parser = Parser()
-        parser.graph = nx.DiGraph([("A", "B", {"name": "f"}),
-                                   ("A", "C", {"name": "g"}),
-                                   ("B", "C", {"name": "h"}),
-                                   ("D", "B", {"name": "i"}),
-                                   ("D", "C", {"name": "j"})
+        parser.graph = nx.DiGraph([("A", "B", {"label": "f"}),
+                                   ("A", "C", {"label": "g"}),
+                                   ("B", "C", {"label": "h"}),
+                                   ("D", "B", {"label": "i"}),
+                                   ("D", "C", {"label": "j"})
                                    ])
         for node in parser.graph:
             parser.graph.nodes[node]["label"] = "X"
@@ -328,8 +328,8 @@ class TestToMorphisms(unittest.TestCase):
     def test_non_comp_morphs(self):
         parser = Parser()
         parser.graph = nx.DiGraph([
-            (0, 1, {"name": "{f}"}),
-            (1, 2, {"name": "{g}"})
+            (0, 1, {"label": "{f}"}),
+            (1, 2, {"label": "{g}"})
         ])
         self.assertEquals(parser.to_morphism_representation(), "{g}{f}")
 

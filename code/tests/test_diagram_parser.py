@@ -32,11 +32,11 @@ class TestTxtToGraph(unittest.TestCase):
     def test_parse_exfig(self):
         g = DiGraph()
         g.add_edges_from([
-            ("{A}", "{B}", {"name": "{f}"}),
-            ("{A}", "{C}", {"name": "{g}"}),
-            ("{B}", "{C}", {"name": "{h}"}),
-            ("{D}", "{B}", {"name": "{i}"}),
-            ("{D}", "{C}", {"name": "{j}"})
+            ("{A}", "{B}", {"label": "{f}"}),
+            ("{A}", "{C}", {"label": "{g}"}),
+            ("{B}", "{C}", {"label": "{h}"}),
+            ("{D}", "{B}", {"label": "{i}"}),
+            ("{D}", "{C}", {"label": "{j}"})
         ])
 
         prs = DiagramParser("testfiles/graph_txt/exfig.txt")
@@ -50,16 +50,16 @@ class TestTxtToGraph(unittest.TestCase):
         g.add_edges_from([
             ("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}",
              "{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}",
-             {"name": "{1 \\times G}"}),
+             {"label": "{1 \\times G}"}),
             ("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}",
              "{\\mathscr{B}^{\\mathrm{op}} \\times \\mathscr{B}}",
-             {"name": "{F^{\\mathrm{op}} \\times 1}"}),
+             {"label": "{F^{\\mathrm{op}} \\times 1}"}),
             ("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}",
              "{\\mathbf{Set}}",
-             {"name": "{\\mathrm{Hom}_{\\mathscr{A}}}"}),
+             {"label": "{\\mathrm{Hom}_{\\mathscr{A}}}"}),
             ("{\\mathscr{B}^{\\mathrm{op}} \\times \\mathscr{B}}",
              "{\\mathbf{Set}}",
-             {"name": "{\\mathrm{Hom}_{\\mathscr{B}}}"})
+             {"label": "{\\mathrm{Hom}_{\\mathscr{B}}}"})
         ])
         prs = DiagramParser("testfiles/graph_txt/complex_labels.txt")
         self.assertTrue(list(g.edges.data()) == list(prs.graph.edges.data()))

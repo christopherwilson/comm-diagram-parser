@@ -47,7 +47,7 @@ class Parser:
 
     def to_tikz_diagram(self):
         self.position_nodes()
-        return nx.to_latex_raw(self.graph, edge_label="name", edge_label_options="opt", node_label="label")
+        return nx.to_latex_raw(self.graph, edge_label="label", edge_label_options="opt", node_label="label")
 
     def position_nodes(self):
         """
@@ -203,7 +203,7 @@ class Parser:
             for link_path in links:
                 morphs = []
                 for edge in link_path:
-                    morphs.append(graph.edges[edge]["name"])
+                    morphs.append(graph.edges[edge]["label"])
                 rep.add("".join(morphs))
 
     def __find_paths_from_source(self, graph: nx.DiGraph, source):
@@ -250,14 +250,23 @@ class Parser:
         morphs = []
         for i in range(len(path)-1):
             edge = [path[i], path[i+1]]
-            morphs.append(graph.edges[edge]["name"])
+            morphs.append(graph.edges[edge]["label"])
         comp_morph = "".join(morphs)
         if (domain, codomain) not in self.comp_morph_eqs:
             self.comp_morph_eqs[(domain, codomain)] = {comp_morph}
         else:
             self.comp_morph_eqs[(domain, codomain)].add(comp_morph)
 
-    def all_paths_method(self, graph, rep, sinks, sources):
+    @staticmethod
+    def __all_paths_method(graph, rep, sinks, sources):
+        """
+        Old method to prune redundant paths.
+        :param graph:
+        :param rep:
+        :param sinks:
+        :param sources:
+        :return:
+        """
         sorted_paths = []
         paths = {}
         path_id = 0
@@ -293,7 +302,7 @@ class Parser:
             curr_non_cannon_paths = {}
             is_redundant = False
             for edge in path:
-                morphs.append(graph.edges[edge]["name"])
+                morphs.append(graph.edges[edge]["label"])
                 # if this edge is part of a non-cannon path
                 if "non-cannon_paths" in graph.edges[edge]:
                     for (key, pos, is_end) in graph.edges[edge]["non-cannon_paths"]:
@@ -345,7 +354,7 @@ class Parser:
             for i in range(len(cycle)):
                 domain = cycle[i - 1]
                 codomain = cycle[i]
-                morph.append(graph.edges[domain, codomain]["name"])
+                morph.append(graph.edges[domain, codomain]["label"])
             morph = "".join(morph)
             rep.append(f"{morph}")
 
@@ -360,7 +369,7 @@ class Parser:
         funcs = [""] * len(path)
         i = 0
         for edge in reversed(path):
-            funcs[i] = graph.get_edge_data(edge[0], edge[1]).get("name")
+            funcs[i] = graph.get_edge_data(edge[0], edge[1]).get("label")
             i += 1
         return "".join(funcs)
 
@@ -377,12 +386,12 @@ class Parser:
                 # stops the removal of cycles or the creation of self-loops
                 if domain == codomain or (codomain, domain) in graph.edges:
                     continue
-                concatenated_morph = graph[node][codomain]["name"] + graph[domain][node]["name"]
+                concatenated_morph = graph[node][codomain]["label"] + graph[domain][node]["label"]
                 if (domain, codomain) in graph.edges:
                     self.__store_comp_morph(domain, codomain, concatenated_morph)
-                    self.__store_comp_morph(domain, codomain, graph[domain][codomain]["name"])
+                    self.__store_comp_morph(domain, codomain, graph[domain][codomain]["label"])
                 else:
-                    graph.add_edge(domain, codomain, name=concatenated_morph)
+                    graph.add_edge(domain, codomain, label=concatenated_morph)
                 graph.remove_node(node)
 
     @staticmethod
@@ -412,7 +421,7 @@ class Parser:
                         label = self.graph.nodes[obj]["label"]
                         label_lines.append(f"L{{{str(obj)}}}{{{str(label)}}}")
 
-            name = self.graph[edge[0]][edge[1]]['name']
-            morph_lines.append(f"{{{str(name)}}}{{{edge[0]}}}{{{edge[1]}}}")
+            label = self.graph[edge[0]][edge[1]]['label']
+            morph_lines.append(f"{{{str(label)}}}{{{edge[0]}}}{{{edge[1]}}}")
 
         return "\n".join(label_lines + morph_lines)
