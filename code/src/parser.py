@@ -106,31 +106,34 @@ class Parser:
         return "\n".join(rep)
 
     def __search_for_eq_comp_morphs(self, graph: nx.DiGraph, curr_node: Any, path: list[Any],
-                                    prev_sources: list[tuple[Any, int]], prev_sinks: set[tuple[Any, int]]):
+                                    prev_domains: list[tuple[Any, int]], prev_codomains: set[tuple[Any, int]]):
         node_pos = len(path)
         path.append(curr_node)
-        graph.nodes[curr_node]["visited"] = True
+        if "visited" not in graph.nodes[curr_node]:
+            graph.nodes[curr_node]["visited"] = {path[0]}
+        else:
+            graph.nodes[curr_node]["visited"].add(path[0])
         is_source = graph.out_degree[curr_node] > 1 or graph.in_degree[curr_node] == 0
         is_sink = graph.in_degree[curr_node] > 1 or graph.out_degree[curr_node] == 0
 
         if is_sink:
             graph.nodes[curr_node]['codomain_children']: dict[Any, list[Any]] = {}
-            for domain, domain_pos in prev_sources:
+            for domain, domain_pos in prev_domains:
                 self.__store_path(domain, curr_node, path[domain_pos:], graph)
-            for codomain, codomain_pos in prev_sinks:
+            for codomain, codomain_pos in prev_codomains:
                 graph.nodes[codomain]['codomain_children'][curr_node] = path[codomain_pos:]
-            prev_sinks = prev_sinks.copy()
-            prev_sinks.add((curr_node, node_pos))
+            prev_codomains = prev_codomains.copy()
+            prev_codomains.add((curr_node, node_pos))
 
         if is_source:
-            prev_sources.append((curr_node, node_pos))
+            prev_domains.append((curr_node, node_pos))
 
         for adj_node in graph.adj[curr_node]:
             if "visited" not in graph.nodes[adj_node]:
                 branch_path = path.copy()
-                self.__search_for_eq_comp_morphs(graph, adj_node, branch_path, prev_sources.copy(), prev_sinks)
+                self.__search_for_eq_comp_morphs(graph, adj_node, branch_path, prev_domains.copy(), prev_codomains)
             else:
-                for prev_domain, prev_domain_pos in reversed(prev_sources):
+                for prev_domain, prev_domain_pos in reversed(prev_domains):
                     found_existing_path = (prev_domain in self.comp_morph_paths
                                            and adj_node in self.comp_morph_paths[prev_domain])
                     path_to = path[prev_domain_pos:]
@@ -142,7 +145,7 @@ class Parser:
                 if "codomain_children" not in graph.nodes[curr_node]:
                     graph.nodes[curr_node]['codomain_children'] = {}
 
-                for prev_codomain, prev_codomain_pos in prev_sinks:
+                for prev_codomain, prev_codomain_pos in prev_codomains:
                     if adj_node in graph.nodes[prev_codomain]["codomain_children"]:
                         continue
                     path_to = path[prev_codomain_pos:]
@@ -151,12 +154,27 @@ class Parser:
 
                 for codomain in graph.nodes[adj_node]['codomain_children']:
                     future_path = graph.nodes[adj_node]['codomain_children'][codomain]
-                    new_path = [curr_node] + future_path
-                    self.__store_path(curr_node, codomain, new_path, graph)
-                    graph.nodes[curr_node]['codomain_children'][codomain] = new_path
+                    for prev_codomain, prev_codomain_pos in prev_codomains:
+                        if codomain not in graph.nodes[prev_codomain]['codomain_children']:
+                            new_path = path[prev_codomain_pos:] + future_path
+                            graph.nodes[prev_codomain]['codomain_children'][codomain] = new_path
+                    if path[0] not in graph.nodes[adj_node]["visited"]:
+                        for prev_domain, prev_domain_pos in prev_domains:
+                            found_existing_path = (prev_domain in self.comp_morph_paths
+                                                   and codomain in self.comp_morph_paths[prev_domain])
+                            new_path = path[prev_domain_pos:] + future_path
+                            self.__store_path(prev_domain, codomain, new_path, graph)
+                            if found_existing_path:
+                                break
+                    graph.nodes[codomain]['visited'].add(path[0])
+
 
     def __parse_paths(self, composition_lines, graph, rep):
         for source in self.comp_morph_paths:
+            # we may have sinks stored in here
+            is_source = graph.out_degree[source] > 1 or graph.in_degree[source] == 0
+            if not is_source:
+                continue
             for sink in self.comp_morph_paths[source]:
                 eqs: set[str] = self.comp_morph_eqs[(source, sink)]
                 paths = self.comp_morph_paths[source][sink]
@@ -248,8 +266,8 @@ class Parser:
         else:
             self.comp_morph_paths[domain] = {codomain: [path]}
         morphs = []
-        for i in range(len(path)-1):
-            edge = [path[i], path[i+1]]
+        for i in range(len(path) - 1):
+            edge = [path[i], path[i + 1]]
             morphs.append(graph.edges[edge]["label"])
         comp_morph = "".join(morphs)
         if (domain, codomain) not in self.comp_morph_eqs:

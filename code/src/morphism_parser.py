@@ -23,8 +23,8 @@ class MorphismParser(Parser):
         :param filepath: the path to the file containing the representation
         """
         super().__init__()
-        if not os.path.exists(filepath):
-            raise FileNotFoundError("No such file or directory: " + filepath)
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError("No such file: " + filepath)
         self.counter = 0
         self.morphs: dict[str, tuple[int, int]] = {}
         self.morphs_by_domain: dict[str, list[str]] = {}
@@ -99,7 +99,7 @@ class MorphismParser(Parser):
         prev_domain = codomain
         prev_morph = ""
         # if we encounter the end of the line or an = we know chain has ended
-        while i < len(line) and line[i] != "=":
+        while i < len(line) and line[i] != "=" and line[i] != "%":
             if line[i] == "{":
                 prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain)
             else:

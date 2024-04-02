@@ -28,11 +28,10 @@ class DiagramParser(Parser):
         :param filepath: Location of the text representation of the commutative diagram.
         """
         super().__init__()
-        if not os.path.exists(filepath):
-            raise FileNotFoundError("No such file or directory: " + filepath)
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError("No such file: " + filepath)
         with open(filepath, 'r') as f:
             line = f.readline()
-            self.labelled_objs = set()
             while line[0] == 'L':
                 self.__parse_label_line(line)
                 line = f.readline()
@@ -58,29 +57,20 @@ class DiagramParser(Parser):
             c: str = line[i]  # iterate through each character
             if c == "{":
                 if num_objs <= 3 and line[i + 1] == "}":
-                    raise Exception("Object labels cannot be empty")
+                    raise Exception("Braces cannot be empty")
                 obj, i = self.extract_label(line, i + 1)
                 objs[num_objs] = obj
                 num_objs += 1
-                # if obj is an object and not a map label
-                if num_objs > 1:
-                    self.__label_node(obj)
+                # if obj is an object and not a map label, and doesn't have a node yet, add it
+                if num_objs > 1 and obj not in self.graph.nodes:
+                    self.graph.add_node(obj, label=obj)
+            elif c == "%":
+                break
             if num_objs == 3:
                 break
+        if num_objs != 3:
+            raise Exception(f"Invalid number of objects, expected 3, got {num_objs}.")
         self.graph.add_edge(objs[1], objs[2], label=objs[0])
-
-    def __label_node(self, obj):
-        """
-        Labels a node in the graph with either the assigned label or the name of the node if no label has been
-        assigned. Will do nothing if the object has already been labelled.
-
-        :param obj: the object/node to be labelled
-        :return:
-        """
-        # if object is not labelled, must not have a label assigned so the label becomes an object.
-        if obj not in self.labelled_objs:
-            self.graph.add_node(obj, label=obj)
-            self.labelled_objs.add(obj)
 
     def __parse_label_line(self, line: str):
         """
@@ -89,12 +79,13 @@ class DiagramParser(Parser):
             L{Object}{Label}
 
         :param line: the line to be parsed
-        :return:
         """
         self.verify_char_is_open_bracket(1, line)
         obj, i = self.extract_label(line, 2)
+        if obj == "{}":
+            raise Exception("Braces cannot be empty")
         self.verify_char_is_open_bracket(i, line)
         label, _ = self.extract_label(line, i + 1)
-        self.labelled_objs.add(obj)
+        if label == "{}":
+            raise Exception("Braces cannot be empty")
         self.graph.add_node(obj, label=label)
-

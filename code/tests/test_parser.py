@@ -99,8 +99,10 @@ INTRO_EXFIG = nx.DiGraph([
     (4, 3, {"label": "{k}"}),
     (3, 5, {"label": "{l}"}),
     (5, 2, {"label": "{m}"}),
-    (6, 4, {"label": "{n}"}),
-    (6, 5, {"label": "{p}"})
+    (6, 7, {"label": "{n}"}),
+    (6, 8, {"label": "{p}"}),
+    (7, 4, {"label": "{q}"}),
+    (8, 5, {"label": "{r}"})
 ])
 
 # https://q.uiver.app/#q=WzAsNCxbMCwxLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMSwyLCIzIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFswLDMsImgiLDJdLFsxLDIsImkiXSxbMiwzLCJqIl1d
