@@ -167,6 +167,15 @@ FIG_8 = nx.DiGraph([
     (2, 6, {"label": "{l}"}),
     (6, 5, {"label": "{m}"})
 ])
+# https://q.uiver.app/#q=WzAsNSxbMSwwLCIwIl0sWzAsMCwiMSJdLFswLDEsIjIiXSxbMSwxLCJcXGJ1bGxldCJdLFsyLDEsIlxcYnVsbGV0Il0sWzAsMSwiZiIsMl0sWzEsMiwiZyIsMl0sWzIsMywiaCIsMl0sWzMsMCwiaSIsMl0sWzMsNCwiaiIsMl0sWzQsMCwibCIsMl1d
+WEDGE = nx.DiGraph([
+    (0, 1, {"label": "{f}"}),
+    (1, 2, {"label": "{g}"}),
+    (2, 3, {"label": "{h}"}),
+    (3, 0, {"label": "{i}"}),
+    (3, 4, {"label": "{j}"}),
+    (4, 0, {"label": "{k}"})
+])
 
 if __name__ == '__main__':
     unittest.main()
@@ -417,3 +426,6 @@ class TestToMorphisms(unittest.TestCase):
 
     def test_intro_exfig(self):
         self.can_graph_be_reconstructed(INTRO_EXFIG)
+
+    def test_wedge_example(self):
+        self.can_graph_be_reconstructed(WEDGE)

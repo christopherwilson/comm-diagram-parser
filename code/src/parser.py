@@ -113,10 +113,10 @@ class Parser:
             graph.nodes[curr_node]["visited"] = {path[0]}
         else:
             graph.nodes[curr_node]["visited"].add(path[0])
-        is_source = graph.out_degree[curr_node] > 1 or graph.in_degree[curr_node] == 0
-        is_sink = graph.in_degree[curr_node] > 1 or graph.out_degree[curr_node] == 0
+        is_domain = graph.out_degree[curr_node] > 1 or graph.in_degree[curr_node] == 0
+        is_codomain = graph.in_degree[curr_node] > 1 or graph.out_degree[curr_node] == 0
 
-        if is_sink:
+        if is_codomain:
             graph.nodes[curr_node]['codomain_children']: dict[Any, list[Any]] = {}
             for domain, domain_pos in prev_domains:
                 self.__store_path(domain, curr_node, path[domain_pos:], graph)
@@ -124,8 +124,10 @@ class Parser:
                 graph.nodes[codomain]['codomain_children'][curr_node] = path[codomain_pos:]
             prev_codomains = prev_codomains.copy()
             prev_codomains.add((curr_node, node_pos))
+            if "codomain_children" not in graph.nodes[curr_node]:
+                graph.nodes[curr_node]['codomain_children'] = {}
 
-        if is_source:
+        if is_domain:
             prev_domains.append((curr_node, node_pos))
 
         for adj_node in graph.adj[curr_node]:
@@ -142,8 +144,8 @@ class Parser:
                     if found_existing_path:
                         break
 
-                if "codomain_children" not in graph.nodes[curr_node]:
-                    graph.nodes[curr_node]['codomain_children'] = {}
+                if "codomain_children" not in graph.nodes[adj_node]:
+                    graph.nodes[adj_node]['codomain_children'] = {}
 
                 for prev_codomain, prev_codomain_pos in prev_codomains:
                     if adj_node in graph.nodes[prev_codomain]["codomain_children"]:
@@ -167,6 +169,7 @@ class Parser:
                             if found_existing_path:
                                 break
                     graph.nodes[codomain]['visited'].add(path[0])
+                graph.nodes[adj_node]['visited'].add(path[0])
 
 
     def __parse_paths(self, composition_lines, graph, rep):
@@ -190,7 +193,14 @@ class Parser:
                             else:
                                 edge_data["line_keys"]: set = {(source, sink)}
                 elif len(eqs) == 1:
-                    composition_lines.append((source, sink))
+                    if source == sink:
+                        eq = eqs.pop()
+                        first_morph = self.extract_label(eq, 1)[0]
+                        eq += first_morph
+                        rep.add(eq)
+                        continue
+                    else:
+                        composition_lines.append((source, sink))
 
     def __find_links(self, composition_lines, graph, rep):
         for source, sink in composition_lines:
