@@ -65,9 +65,15 @@ class DiagramParser(Converter):
                 if num_objs > 1 and obj not in self.graph.nodes:
                     self.graph.add_node(obj, label=obj)
             elif c == "%":
-                break
+                if num_objs == 0:
+                    return
+                else:
+                    break
+            else:
+                i += 1
             if num_objs == 3:
                 break
+
         if num_objs != 3:
             raise Exception(f"Invalid number of objects, expected 3, got {num_objs}.")
         self.graph.add_edge(objs[1], objs[2], label=objs[0])

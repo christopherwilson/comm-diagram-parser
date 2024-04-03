@@ -173,8 +173,8 @@ class TestParseLine(unittest.TestCase):
         print(parser.to_tikz_diagram())
         self.assertTrue(nx.is_isomorphic(expected_graph, parser.graph))
 
-    def test_complex_exfig(self):
-        parser = MorphismParser("testfiles/morphisms_txt/complicated_ex_fig")
+    def test_intro_ex_fig(self):
+        parser = MorphismParser("testfiles/morphisms_txt/intro_ex_fig")
         print(parser.to_tikz_diagram())
 
 

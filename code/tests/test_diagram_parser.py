@@ -79,3 +79,7 @@ class TestTxtToGraph(unittest.TestCase):
         }
         for node, label in expected_nodes_values.items():
             self.assertEquals(prs.graph.nodes[node]['label'], label)
+
+    def test_intro_exfig(self):
+        prs = DiagramParser("testfiles/graph_txt/intro_ex_fig.txt")
+        print(prs.to_tikz_diagram())

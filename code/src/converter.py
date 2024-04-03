@@ -1,5 +1,5 @@
-import heapq
-from collections import deque
+# import heapq
+# from collections import deque
 from typing import Any
 
 import networkx as nx
@@ -71,7 +71,6 @@ class Converter:
         for node in graph.nodes:
             if graph.out_degree[node] > 1 or graph.in_degree[node] == 0:
                 possible_starts.append((graph.in_degree[node], node))
-            graph.nodes[node]["visited_from"] = set()
 
         possible_starts.sort()
 
@@ -116,7 +115,7 @@ class Converter:
         if is_codomain:
             graph.nodes[curr_node]['codomain_children']: dict[Any, list[Any]] = {}
             for domain, domain_pos in prev_domains:
-                self.__store_path(domain, curr_node, path[domain_pos:], graph)
+                self.__store_path(domain, curr_node, path[domain_pos:])
             for codomain, codomain_pos in prev_codomains:
                 graph.nodes[codomain]['codomain_children'][curr_node] = path[codomain_pos:]
             prev_codomains = prev_codomains.copy()
@@ -137,7 +136,7 @@ class Converter:
                                            and adj_node in self.comp_morph_paths[prev_domain])
                     path_to = path[prev_domain_pos:]
                     path_to.append(adj_node)
-                    self.__store_path(prev_domain, adj_node, path_to, graph)
+                    self.__store_path(prev_domain, adj_node, path_to)
                     if found_existing_path:
                         break
 
@@ -162,7 +161,7 @@ class Converter:
                             found_existing_path = (prev_domain in self.comp_morph_paths
                                                    and codomain in self.comp_morph_paths[prev_domain])
                             new_path = path[prev_domain_pos:] + future_path
-                            self.__store_path(prev_domain, codomain, new_path, graph)
+                            self.__store_path(prev_domain, codomain, new_path)
                             if found_existing_path:
                                 break
                     graph.nodes[codomain]['visited'].add(path[0])
@@ -236,7 +235,7 @@ class Converter:
                     morphs.append(graph.edges[edge]["label"])
                 rep.add("".join(morphs))
 
-    def __store_path(self, domain, codomain, path, graph):
+    def __store_path(self, domain, codomain, path):
         if domain in self.comp_morph_paths.keys():
             domain_dict = self.comp_morph_paths[domain]
             if codomain in domain_dict.keys():
@@ -277,8 +276,9 @@ class Converter:
             morph_lines.append(f"{{{str(label)}}}{{{edge[0]}}}{{{edge[1]}}}")
 
         return "\n".join(label_lines + morph_lines)
-
-    # below lie some old functions.
+    ####################################################
+    # Function graveyard, here lie some old functions. #
+    ####################################################
 
     # def __find_paths_from_source(self, graph: nx.DiGraph, source):
     #     """

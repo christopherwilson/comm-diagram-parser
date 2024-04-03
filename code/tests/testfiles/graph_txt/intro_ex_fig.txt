@@ -1,0 +1,18 @@
+L{2}{$\bullet$}
+L{11}{$\bullet$}
+L{8}{$\bullet$}
+L{10}{$\bullet$}
+L{6}{$\bullet$}
+L{15}{$\bullet$}
+L{14}{$\bullet$}
+{{$g$}}{2}{11}
+{{$k$}}{8}{10}
+{{$j$}}{6}{8}
+{{$f$}}{6}{2}
+{{$h$}}{6}{10}
+{{$i$}}{10}{11}
+{{$l$}}{10}{15}
+{{$m$}}{15}{11}
+{{$n$}}{14}{8}
+{{$p$}}{14}{15}
+% https://q.uiver.app/#q=WzAsNyxbMCwwLCJcXGJ1bGxldCJdLFsxLDIsIlxcYnVsbGV0Il0sWzAsMSwiXFxidWxsZXQiXSxbMSwxLCJcXGJ1bGxldCJdLFsxLDAsIlxcYnVsbGV0Il0sWzIsMSwiXFxidWxsZXQiXSxbMiwwLCJcXGJ1bGxldCJdLFswLDIsImYiLDJdLFsyLDEsImciLDJdLFswLDMsImgiXSxbMywxLCJpIl0sWzAsNCwiaiJdLFs0LDMsImsiXSxbMyw1LCJsIl0sWzUsMSwibSJdLFs2LDQsIm4iLDJdLFs2LDUsInAiXV0=
