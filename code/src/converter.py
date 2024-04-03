@@ -1,6 +1,5 @@
 import heapq
 from collections import deque
-from math import ceil, sqrt
 from typing import Any
 
 import networkx as nx
@@ -45,18 +44,19 @@ class Converter:
             i += 1
         return " \\\\ ".join(rows)
 
-    def to_tikz_diagram(self):
-        positions = self.position_nodes()
-        return nx.to_latex_raw(self.graph, pos=positions, edge_label="label", edge_label_options="opt",
+    def to_tikz_diagram(self, scale=4):
+        positions = self.position_nodes(scale)
+        return nx.to_latex_raw(self.graph, pos=positions, edge_label="label", default_edge_options="[->, auto]",
                                node_label="label")
 
     def position_nodes(self, scale=4):
         """
         Positions nodes of graph naively in a grid structure.
         """
-        for edge in self.graph.edges:
-            self.graph.edges[edge]["opt"] = "[auto]"
-        return nx.spring_layout(self.graph, scale=scale)
+        if nx.is_planar(self.graph):
+            return nx.spring_layout(self.graph, pos=nx.planar_layout(self.graph), scale=scale)
+        else:
+            return nx.spring_layout(self.graph, scale=scale)
 
 
     def __store_comp_morph(self, domain, codomain, comp_morph: str):
