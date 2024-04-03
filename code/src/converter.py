@@ -56,10 +56,7 @@ class Converter:
         """
         for edge in self.graph.edges:
             self.graph.edges[edge]["opt"] = "[auto]"
-        if nx.is_planar(self.graph):
-            return nx.planar_layout(self.graph, scale=scale)
-        else:
-            return nx.spring_layout(self.graph, scale=scale)
+        return nx.spring_layout(self.graph, scale=scale)
 
 
     def __store_comp_morph(self, domain, codomain, comp_morph: str):
