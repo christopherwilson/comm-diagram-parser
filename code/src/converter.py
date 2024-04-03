@@ -46,25 +46,21 @@ class Converter:
         return " \\\\ ".join(rows)
 
     def to_tikz_diagram(self):
-        self.position_nodes()
-        return nx.to_latex_raw(self.graph, edge_label="label", edge_label_options="opt", node_label="label")
+        positions = self.position_nodes()
+        return nx.to_latex_raw(self.graph, pos=positions, edge_label="label", edge_label_options="opt",
+                               node_label="label")
 
-    def position_nodes(self):
+    def position_nodes(self, scale=4):
         """
         Positions nodes of graph naively in a grid structure.
         """
-        # TODO better algo
-        num_cols = ceil(sqrt(len(self.graph.nodes)))
-        x = 0
-        y = 0
-        for node in self.graph.nodes:
-            self.graph.nodes[node]["pos"] = (x * 2, y * 2)
-            x += 1
-            if x == num_cols:
-                x = 0
-                y -= 1
         for edge in self.graph.edges:
             self.graph.edges[edge]["opt"] = "[auto]"
+        if nx.is_planar(self.graph):
+            return nx.planar_layout(self.graph, scale=scale)
+        else:
+            return nx.spring_layout(self.graph, scale=scale)
+
 
     def __store_comp_morph(self, domain, codomain, comp_morph: str):
         """
