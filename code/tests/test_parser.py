@@ -3,7 +3,7 @@ import unittest
 import networkx as nx
 
 from morphism_parser import MorphismParser
-from src.parser import Parser
+from src.converter import Converter
 
 # https://q.uiver.app/#q=WzAsOCxbMCwyLCIwIl0sWzEsMiwiMSJdLFsyLDEsIjIiXSxbMywyLCIzIl0sWzQsMiwiNCJdLFsyLDMsIjUiXSxbMSwwLCI2Il0sWzMsMCwiNyJdLFswLDEsImYiLDJdLFsxLDIsImciXSxbMiwzLCJoIl0sWzMsNCwiaSJdLFsxLDUsImoiLDJdLFs1LDMsImsiLDJdLFswLDYsImwiXSxbNiw3LCJtIl0sWzcsNCwibiJdXQ
 BRIDGE = nx.DiGraph([
@@ -188,7 +188,7 @@ class TestListsToLatex(unittest.TestCase):
             [3, 4]
         ]
         txt = "1 & 2 \\\\ 3 & 4"
-        self.assertEquals(txt, Parser.lists_to_latex_matrix(lst))
+        self.assertEquals(txt, Converter.lists_to_latex_matrix(lst))
 
     def test_two_three(self):
         lst = [
@@ -196,7 +196,7 @@ class TestListsToLatex(unittest.TestCase):
             ["D", "E", "F"]
         ]
         txt = "A & B & C \\\\ D & E & F"
-        self.assertEquals(txt, Parser.lists_to_latex_matrix(lst))
+        self.assertEquals(txt, Converter.lists_to_latex_matrix(lst))
 
     def test_three_two(self):
         lst = [
@@ -205,7 +205,7 @@ class TestListsToLatex(unittest.TestCase):
             ["E", "F"]
         ]
         txt = "A & B \\\\ C & D \\\\ E & F"
-        self.assertEquals(txt, Parser.lists_to_latex_matrix(lst))
+        self.assertEquals(txt, Converter.lists_to_latex_matrix(lst))
 
     def test_uncompleted(self):
         lst = [
@@ -214,42 +214,42 @@ class TestListsToLatex(unittest.TestCase):
             ["G"]
         ]
         txt = "A & B & C \\\\ D & E & F \\\\ G"
-        self.assertEquals(txt, Parser.lists_to_latex_matrix(lst))
+        self.assertEquals(txt, Converter.lists_to_latex_matrix(lst))
 
 
 class TestExtractLabel(unittest.TestCase):
     def test_extract_label_basic(self):
         test_str_basic: str = '{A}'
-        self.assertEquals(('{A}', 3), Parser.extract_label(test_str_basic, 1))
+        self.assertEquals(('{A}', 3), Converter.extract_label(test_str_basic, 1))
 
     def test_extract_label_repeat(self):
         test_str_repeat: str = '{A}{B}'
-        self.assertEquals(('{A}', 3), Parser.extract_label(test_str_repeat, 1))
+        self.assertEquals(('{A}', 3), Converter.extract_label(test_str_repeat, 1))
 
     def test_extract_label_brackets(self):
         test_str_interior_brackets: str = '{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}'
         self.assertEquals(('{\\mathbf{I}^{\\mathscal{A}}_{X,Y}}', 33),
-                          Parser.extract_label(test_str_interior_brackets, 1))
+                          Converter.extract_label(test_str_interior_brackets, 1))
 
     def test_extract_label_complex(self):
         test_str_complex: str = '{[\\mathscal{A}^{\\op},X](-,-)}{H_{A}}'
-        self.assertEquals(('{[\\mathscal{A}^{\\op},X](-,-)}', 29), Parser.extract_label(test_str_complex, 1))
+        self.assertEquals(('{[\\mathscal{A}^{\\op},X](-,-)}', 29), Converter.extract_label(test_str_complex, 1))
 
     def test_extract_label_empty(self):
         test_str_empty: str = '{}{A}'
-        self.assertEquals(('{}', 2), Parser.extract_label(test_str_empty, 1))
+        self.assertEquals(('{}', 2), Converter.extract_label(test_str_empty, 1))
 
     def test_extract_label_complex_file(self):
         line1 = ["{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{"
                  "A}}{1 \\times G}",
                  "{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{A}}{1 \\times G}",
                  "{1 \\times G}"]
-        self.assertEquals("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}", Parser.extract_label(line1[0], 1)[0])
+        self.assertEquals("{\\mathscr{A}^{\\mathrm{op}} \\times \\mathscr{B}}", Converter.extract_label(line1[0], 1)[0])
 
 
 class TestToLatex(unittest.TestCase):
     def test_exfig(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = nx.DiGraph([("A", "B", {"label": "f"}),
                                    ("A", "C", {"label": "g"}),
                                    ("B", "C", {"label": "h"}),
@@ -261,7 +261,7 @@ class TestToLatex(unittest.TestCase):
 
 class TestToDiagramRepresentation(unittest.TestCase):
     def test_exfig(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = nx.DiGraph([("A", "B", {"label": "f"}),
                                    ("A", "C", {"label": "g"}),
                                    ("B", "C", {"label": "h"}),
@@ -282,7 +282,7 @@ class TestToDiagramRepresentation(unittest.TestCase):
         self.assertEquals(parser.to_diagram_representation() + "\n", expected_output)
 
     def test_exfig_endos(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = nx.DiGraph([("A", "B", {"label": "f"}),
                                    ("A", "C", {"label": "g"}),
                                    ("B", "C", {"label": "h"}),
@@ -305,7 +305,7 @@ class TestToDiagramRepresentation(unittest.TestCase):
 
 class TestToMorphisms(unittest.TestCase):
     def can_graph_be_reconstructed(self, graph: nx.DiGraph):
-        parser = Parser()
+        parser = Converter()
         parser.graph = graph
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -315,7 +315,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
         print("\ndual:")
-        parser = Parser()
+        parser = Converter()
         parser.graph = nx.reverse(graph)
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -337,7 +337,7 @@ class TestToMorphisms(unittest.TestCase):
         self.can_graph_be_reconstructed(DOUBLY_STAGGERED)
 
     def test_non_comp_morphs(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = nx.DiGraph([
             (0, 1, {"label": "{f}"}),
             (1, 2, {"label": "{g}"})
@@ -345,7 +345,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertEquals(parser.to_morphism_representation(), "{g}{f}")
 
     def test_limit(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = LIMIT_DEF
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -355,7 +355,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_bulky_diamond(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = BULKY_DIAMOND
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -365,7 +365,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_bulky_diamond_dual(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = nx.reverse(BULKY_DIAMOND)
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -378,7 +378,7 @@ class TestToMorphisms(unittest.TestCase):
         self.can_graph_be_reconstructed(BIG_CYCLE_TRIANGLES)
 
     def test_bulkier_diamond(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = BULKIER_DIAMOND
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -388,7 +388,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_cycle(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = CYCLE
         representation = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -398,7 +398,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_three_branches(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = THREE_BRANCHES
         morph_rep = parser.to_morphism_representation()
         with open('temp.txt', 'w') as f:
@@ -409,7 +409,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(morph_rep.count('=') == 2)
 
     def test_fig_8(self):
-        parser = Parser()
+        parser = Converter()
         parser.graph = FIG_8
         morph_rep = parser.to_morphism_representation()
         print(morph_rep)

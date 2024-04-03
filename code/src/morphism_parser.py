@@ -3,10 +3,10 @@ from typing import Any
 
 import networkx as nx
 
-from src.parser import Parser
+from src.converter import Converter
 
 
-class MorphismParser(Parser):
+class MorphismParser(Converter):
     morphs: dict[str, tuple[Any, Any]]
     morphs_by_domain: dict[int, list[str]]
     morphs_by_codomain: dict[int, list[str]]

@@ -1,9 +1,9 @@
 import os.path
 
-from src.parser import Parser
+from src.converter import Converter
 
 
-class DiagramParser(Parser):
+class DiagramParser(Converter):
 
     def __init__(self, filepath: str):
         """

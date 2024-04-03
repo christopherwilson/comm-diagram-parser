@@ -6,7 +6,7 @@ from typing import Any
 import networkx as nx
 
 
-class Parser:
+class Converter:
     def __init__(self):
         self.cycles: dict[int, tuple[nx.DiGraph, set, set]] = {}  # (graph, sources, sinks)
         self.comp_morph_eqs: dict[tuple[Any, Any], set[str]] = {}
