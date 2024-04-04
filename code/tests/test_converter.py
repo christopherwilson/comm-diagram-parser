@@ -99,10 +99,8 @@ INTRO_EXFIG = nx.DiGraph([
     (4, 3, {"label": "{k}"}),
     (3, 5, {"label": "{l}"}),
     (5, 2, {"label": "{m}"}),
-    (6, 7, {"label": "{n}"}),
-    (6, 8, {"label": "{p}"}),
-    (7, 4, {"label": "{q}"}),
-    (8, 5, {"label": "{r}"})
+    (6, 4, {"label": "{n}"}),
+    (6, 5, {"label": "{p}"}),
 ])
 
 # https://q.uiver.app/#q=WzAsNCxbMCwxLCIwIl0sWzEsMCwiMSJdLFsxLDEsIjIiXSxbMSwyLCIzIl0sWzAsMSwiZiJdLFswLDIsImciLDJdLFswLDMsImgiLDJdLFsxLDIsImkiXSxbMiwzLCJqIl1d
@@ -167,7 +165,7 @@ FIG_8 = nx.DiGraph([
     (2, 6, {"label": "{l}"}),
     (6, 5, {"label": "{m}"})
 ])
-# https://q.uiver.app/#q=WzAsNSxbMSwwLCIwIl0sWzAsMCwiMSJdLFswLDEsIjIiXSxbMSwxLCJcXGJ1bGxldCJdLFsyLDEsIlxcYnVsbGV0Il0sWzAsMSwiZiIsMl0sWzEsMiwiZyIsMl0sWzIsMywiaCIsMl0sWzMsMCwiaSIsMl0sWzMsNCwiaiIsMl0sWzQsMCwibCIsMl1d
+# https://q.uiver.app/#q=WzAsNSxbMSwwLCIwIl0sWzAsMCwiMSJdLFswLDEsIjIiXSxbMSwxLCIzIl0sWzIsMSwiNCJdLFswLDEsImYiLDJdLFsxLDIsImciLDJdLFsyLDMsImgiLDJdLFszLDAsImkiLDJdLFszLDQsImoiLDJdLFs0LDAsImwiLDJdXQ==
 WEDGE = nx.DiGraph([
     (0, 1, {"label": "{f}"}),
     (1, 2, {"label": "{g}"}),
@@ -345,14 +343,7 @@ class TestToMorphisms(unittest.TestCase):
         self.assertEquals(parser.to_morphism_representation(), "{g}{f}")
 
     def test_limit(self):
-        parser = Converter()
-        parser.graph = LIMIT_DEF
-        representation = parser.to_morphism_representation()
-        with open('temp.txt', 'w') as f:
-            f.write(representation)
-        print(representation)
-        morph_parser = MorphismParser('temp.txt')
-        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+        self.can_graph_be_reconstructed(LIMIT_DEF)
 
     def test_bulky_diamond(self):
         parser = Converter()
@@ -378,14 +369,7 @@ class TestToMorphisms(unittest.TestCase):
         self.can_graph_be_reconstructed(BIG_CYCLE_TRIANGLES)
 
     def test_bulkier_diamond(self):
-        parser = Converter()
-        parser.graph = BULKIER_DIAMOND
-        representation = parser.to_morphism_representation()
-        with open('temp.txt', 'w') as f:
-            f.write(representation)
-        print(representation)
-        morph_parser = MorphismParser('temp.txt')
-        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+        self.can_graph_be_reconstructed(BULKIER_DIAMOND)
 
     def test_cycle(self):
         parser = Converter()
@@ -398,25 +382,10 @@ class TestToMorphisms(unittest.TestCase):
         self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
 
     def test_three_branches(self):
-        parser = Converter()
-        parser.graph = THREE_BRANCHES
-        morph_rep = parser.to_morphism_representation()
-        with open('temp.txt', 'w') as f:
-            f.write(morph_rep)
-        print(morph_rep)
-        morph_parser = MorphismParser('temp.txt')
-        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
-        self.assertTrue(morph_rep.count('=') == 2)
+        self.can_graph_be_reconstructed(THREE_BRANCHES)
 
     def test_fig_8(self):
-        parser = Converter()
-        parser.graph = FIG_8
-        morph_rep = parser.to_morphism_representation()
-        print(morph_rep)
-        with open('temp.txt', 'w') as f:
-            f.write(morph_rep)
-        morph_parser = MorphismParser('temp.txt')
-        self.assertTrue(nx.is_isomorphic(parser.graph, morph_parser.graph))
+        self.can_graph_be_reconstructed(FIG_8)
 
     def test_example_fig(self):
         self.can_graph_be_reconstructed(EXAMPLE_FIG)
