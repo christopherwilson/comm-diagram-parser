@@ -90,7 +90,7 @@ class MorphismParser(Converter):
             if char == "%":
                 break
             if char == "{":
-                i = self.parse_composed_morph(line, i, domain, codomain)
+                i, domain, codomain = self.parse_composed_morph(line, i, domain, codomain)
             else:
                 i += 1
 
@@ -98,17 +98,33 @@ class MorphismParser(Converter):
         i = start_pos
         prev_domain = codomain
         prev_morph = ""
+        is_initial = True
         # if we encounter the end of the line or an = we know chain has ended
         while i < len(line) and line[i] != "=" and line[i] != "%":
             if line[i] == "{":
-                prev_domain, i, prev_morph = self.process_morph(i, line, prev_domain)
+                prev_domain, i, prev_morph, assigned_codomain = self.process_morph(i, line, prev_domain)
+                # updating codomain if it's been contracted into a different vertex
+                if is_initial and assigned_codomain != codomain:
+                    codomain = assigned_codomain
+                is_initial = False
             else:
                 i += 1
         if prev_morph in self.morphs:
             old_domain = self.morphs[prev_morph][0]
             if old_domain != domain:
-                self.contract_objects(old_domain, domain)
-        return i
+                # finding the vertex with the least amount of edges to contract
+                old_domain_degree = self.graph.in_degree[old_domain] + self.graph.out_degree[old_domain]
+                if domain in self.graph.nodes:
+                    domain_degree = self.graph.in_degree[domain] + self.graph.out_degree[domain]
+                    if old_domain_degree <= domain_degree:
+                        self.contract_objects(old_domain, domain)
+                    else:
+                        self.contract_objects(domain, old_domain)
+                        domain = old_domain
+                # if domain isn't already a vertex, we just need to override it with the existing vertex
+                else:
+                    domain = old_domain
+        return i, domain, codomain
 
     def process_morph(self, pos, line, prev_domain):
         morph, pos = self.extract_label(line, pos + 1)
@@ -116,13 +132,19 @@ class MorphismParser(Converter):
             curr_domain, morph_codomain = self.morphs[morph]
             # if the domains already match we don't have a problem, if they don't we need to merge the nodes
             if morph_codomain != prev_domain:
-                # IMPORTANT: we need to merge morph_codomain INTO prev_codomain, as this ensures the domain
-                #  of the composed morphism stays the same. Although it would be better time complexity to go the other
-                #  way
-                self.contract_objects(morph_codomain, prev_domain)
+                degree_morph_codomain = self.graph.in_degree[morph_codomain] + self.graph.out_degree[morph_codomain]
+                if prev_domain in self.graph.nodes:
+                    degree_prev_domain = self.graph.in_degree[prev_domain] + self.graph.out_degree[prev_domain]
+                    if degree_prev_domain < degree_morph_codomain:
+                        self.contract_objects(prev_domain, morph_codomain)
+                        prev_domain = morph_codomain
+                    else:
+                        self.contract_objects(morph_codomain, prev_domain)
+                else:
+                    prev_domain = morph_codomain
         else:
             # if we haven't seen the morphism before we need to assign it a codomain
             curr_domain = self.counter
             self.counter += 1
         self.add_edge(morph, curr_domain, prev_domain)
-        return curr_domain, pos, morph
+        return curr_domain, pos, morph, prev_domain
